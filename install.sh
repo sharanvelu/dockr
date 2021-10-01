@@ -42,7 +42,7 @@ curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/d
 PATH=$PATH:$DOCKR_DIR_HOME
 
 # Alias File
-curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/.dockr_rc" >> "${DOCKR_DIR_HOME}/${DOCKR_FILES_RC}"
+echo curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/.dockr_rc" >> "${DOCKR_DIR_HOME}/${DOCKR_FILES_RC}"
 . "${DOCKR_DIR_HOME}/${DOCKR_FILES_RC}"
 
 echo "Files initiation Complete."
