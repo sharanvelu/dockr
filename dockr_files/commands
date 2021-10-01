@@ -1,0 +1,196 @@
+# Checks For the working of Docker Engine...
+function is_docker_engine_up {
+    if ! docker info > /dev/null 2>&1; then
+        echo -e "${WHITE}Docker is not running.${CLR}" >&2
+
+        exit 1
+    fi
+}
+
+# Checks For Dockr Running...
+function is_dockr_up {
+    # If needs to skip checking for dockr and
+    if [ -z "$DO_NOT_CHECK_DOCKR" ]; then
+        if docker-compose -f "$DOCKER_COMPOSE_FILE" ps | grep -q web
+        then
+            # Check if there is exited web containers
+            EXITED_STATE="$(docker-compose -f $DOCKER_COMPOSE_FILE ps | grep web | grep exited)"
+            if [ -n "$EXITED_STATE" ]; then
+                dockr_container_is_stopped
+
+            elif [ -n "$(docker-compose -f $DOCKER_COMPOSE_FILE ps -q)" ]; then
+                cat null > /dev/null 2>&1
+                PROCEED_EXECUTION=1
+            fi
+        fi
+        if [ -z "$PROCEED_EXECUTION" ]; then
+            dockr_is_down
+        fi
+    fi
+}
+
+# Function that output Dockr container is not running.
+function dockr_is_down {
+    echo -e "${RED}No ${WHITE}Dockr container is running.${CLR}" >&2
+    echo "" >&2
+    echo -e "${WHITE}You can run Dockr using any one of the following commands:${CLR}" >&2
+    echo -e "${YELLOW}\"dockr up\" ${WHITE}For Normal Mode${CLR}  or" >&2
+    echo -e "${YELLOW}\"dockr up -d\" ${WHITE}For Detached Mode${CLR}" >&2
+
+    exit 1
+}
+
+# Function that output Dockr container is stopped and not terminated.
+function dockr_container_is_stopped {
+    echo -e "${WHITE}The Dockr container${CLR}(s) ${WHITE}is ${RED}stopped.${CLR}" >&2
+    echo "" >&2
+    echo -e "${WHITE}You can start the Dockr container${CLR}(s) ${WHITE}using any one of the following commands:${CLR}" >&2
+    echo -e "${YELLOW}\"dockr start\" ${CLR}or ${YELLOW}\"dockr up -d\" ${WHITE}For Detached Mode${CLR} or" >&2
+    echo -e "${YELLOW}\"dockr up\" ${WHITE}For Normal Mode${CLR}" >&2
+
+    exit 1
+}
+
+if [ $# -gt 0 ]; then
+    is_docker_engine_up
+
+    # Run "PHP" Command within web container.
+    if [ "$1" == "php" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            php "$@"
+
+    # Run "./vendor/bin" (Binary) Command within web container.
+    elif [ "$1" == "bin" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            ./vendor/bin/"$*"
+
+    # Run "Composer" Command within web container.
+    elif [ "$1" == "composer" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            composer "$@"
+
+    # Run" PHP Artisan" Command within web container.
+    elif [ "$1" == "artisan" ] || [ "$1" == "art" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            php artisan "$@"
+
+    # Run "PHP Artisan Test" Command within web container.
+    elif [ "$1" == "test" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            php artisan test "$@"
+
+    # Initiate a "laravel Tinker" within web container.
+    elif [ "$1" == "tinker" ] ; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            php artisan tinker
+
+    # Run "PHP Artisan Migrate" Command within web container.
+    elif [ "$1" == "migrate" ] ; then
+        shift 1
+        is_dockr_up
+
+        MIGRATION_COMMAND="migrate"
+        if [ $# -gt 0 ]; then
+            MIGRATION_COMMAND="$MIGRATION_COMMAND:$*"
+        fi
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            php artisan "$MIGRATION_COMMAND"
+
+    # Run "PHP Artisan db:seed" Command along with "--class" flag within web container.
+    elif [ "$1" == "seed" ] ; then
+        shift 1
+        is_dockr_up
+
+        SEEDER_COMMAND="db:seed"
+        if [ $# -gt 0 ]; then
+            SEEDER_COMMAND="$SEEDER_COMMAND --class=$1"
+        fi
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            php artisan "$SEEDER_COMMAND"
+
+    # Run "Node" Command within web container.
+    elif [ "$1" == "node" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            node "$@"
+
+    # Run "NPM" Command within web container.
+    elif [ "$1" == "npm" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            npm "$@"
+
+    # Run "NPX" Command within web container.
+    elif [ "$1" == "npx" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            npx "$@"
+
+    # Run "YARN" Command within web container.
+    elif [ "$1" == "yarn" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            yarn "$@"
+
+    # Initiate a session within mysql container.
+    elif [ "$1" == "mysql" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec mysql \
+            bash -c "MYSQL_PWD=${MYSQL_PASSWORD} mysql -u ${MYSQL_USER} ${MYSQL_DATABASE}"
+
+    # Initiate a Bash session within web container.
+    elif [ "$1" == "shell" ] || [ "$1" == "bash" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec web \
+            bash "$@"
+
+    # Initiate a Redis Session within Redis container is available.
+    elif [ "$1" == "redis" ] ; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "$DOCKER_COMPOSE_FILE" exec redis \
+            redis-cli
+
+    # RUN other Command with docker-compose
+    else
+        docker-compose -f "$DOCKER_COMPOSE_FILE" "$@"
+    fi
+
+# Execute PS Command if just "dockr" is run.
+# This is to avoid confusions from empty screen after executing command.
+else
+    docker-compose -f "$DOCKER_COMPOSE_FILE" ps
+fi

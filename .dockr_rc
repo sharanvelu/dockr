@@ -1,0 +1,5 @@
+## Dockr Setup
+alias dockr_setup="~/.dockr/dockr_setup.sh"
+
+## Dockr Executables
+alias dockr="./dockr"
