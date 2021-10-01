@@ -16,7 +16,7 @@ echo "Beginning Installation..."
 DOCKR_BRANCH="global-dockr"
 
 ## DIRECTORY
-DOCKR_DIR_HOME="${HOME}/Dockr"
+export DOCKR_DIR_HOME="${HOME}/Dockr"
 DOCKR_DIR_FILES="${DOCKR_DIR_HOME}/dockr_files"
 
 # FILES NAME
