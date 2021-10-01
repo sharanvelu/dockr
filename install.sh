@@ -12,30 +12,37 @@
 
 echo "Beginning Installation..."
 
+## DOCKR_BRANCH
+
 ## DIRECTORY
-DOCKER_DIR_HOME="${HOME}/.dockr"
-DOCKER_DIR_FILES="${DOCKER_DIR_HOME}/dockr_files"
+DOCKR_DIR_HOME="${HOME}/Dockr"
+DOCKR_DIR_FILES="${DOCKR_DIR_HOME}/dockr_files"
 
 # FILES NAME
-DOCKER_FILES_SETUP="dockr_setup.sh"
-DOCKER_FILES_COMMANDS="commands"
-DOCKER_FILES_ENV="env"
-DOCKER_FILES_RC=".dockr_rc"
+DOCKR_FILES_SETUP="dockr_setup"
+DOCKR_FILES_COMMANDS="commands"
+DOCKR_FILES_ENV="env"
+DOCKR_FILES_RC=".dockr_rc"
+DOCKR_FILES_DOCKR="dockr"
 
 ## Dockr Directory
-rm -rf "${DOCKER_DIR_HOME}"
-mkdir "${DOCKER_DIR_HOME}"
+rm -rf "${DOCKR_DIR_HOME}"
+mkdir "${DOCKR_DIR_HOME}"
 
 ## Dockr Setup File
-curl -fsSL https://raw.githubusercontent.com/sharanvelu/dockr/release/dockr_setup.sh >> "${DOCKER_DIR_HOME}/${DOCKER_FILES_SETUP}"
+curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr_setup.sh" >> "${DOCKR_DIR_HOME}/${DOCKR_FILES_SETUP}"
 
-mkdir "${DOCKER_DIR_FILES}"
-curl -fsSL https://raw.githubusercontent.com/sharanvelu/dockr/release/dockr_files/env >> "${DOCKER_DIR_FILES}/${DOCKER_FILES_ENV}"
-curl -fsSL https://raw.githubusercontent.com/sharanvelu/dockr/release/dockr_files/commands >> "${DOCKER_DIR_FILES}/${DOCKER_FILES_COMMANDS}"
+mkdir "${DOCKR_DIR_FILES}"
+curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr_files/env" >> "${DOCKR_DIR_FILES}/${DOCKR_FILES_ENV}"
+curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr_files/commands" >> "${DOCKR_DIR_FILES}/${DOCKR_FILES_COMMANDS}"
+
+## DOCKR
+curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr" >> "${DOCKR_DIR_HOME}/${DOCKR_FILES_DOCKR}"
+PATH=$PATH:$DOCKR_DIR_HOME
 
 # Alias File
-curl -fsSL https://raw.githubusercontent.com/sharanvelu/dockr/release/.dockr_rc >> "${DOCKER_DIR_HOME}/${DOCKER_FILES_RC}"
-. "${DOCKER_DIR_HOME}/${DOCKER_FILES_RC}"
+curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/.dockr_rc" >> "${DOCKR_DIR_HOME}/${DOCKR_FILES_RC}"
+. "${DOCKR_DIR_HOME}/${DOCKR_FILES_RC}"
 
 echo "Files initiation Complete."
-echo "Kindly run \033[1;34m\"\033[1;33m. ${DOCKER_DIR_HOME}/${DOCKER_FILES_RC}\033[1;34m\"\033[0m to Complete the installation"
+echo "Kindly run \033[1;34m\"\033[1;33m. ${DOCKR_DIR_HOME}/${DOCKR_FILES_RC}\033[1;34m\"\033[0m to Complete the installation"

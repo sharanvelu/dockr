@@ -1,5 +1,5 @@
 ## Dockr Setup
-alias dockr_setup="~/.dockr/dockr_setup.sh"
+alias dockr_setup="${DOCKR_DIR_HOME}/${DOCKR_FILES_SETUP}"
 
 ## Dockr Executables
-alias dockr="./dockr"
+alias dockr="${DOCKR_DIR_HOME}/${DOCKR_FILES_DOCKR}"
