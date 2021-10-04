@@ -171,8 +171,8 @@ finalize_setup() {
 add_host_entry() {
     display_process "Adding Hosts Entry for Dockr Networking..."
 
-    echo "Enter your system password (if prompted)!"
     if ! grep -q "dockr.host" /etc/hosts; then
+        echo "Enter your system password (if prompted)!"
         {
             echo ""
             echo "# Added by Dockr"
