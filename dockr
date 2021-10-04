@@ -24,7 +24,9 @@ fi
 
 # Define custom environment variables
 export APP_PORT=${APP_PORT:-80}
-export DOCKER_COMPOSE_FILE="docker-compose-local.yml"
+
+DOCKER_COMPOSE_FILE="$(pwd)/docker-compose-local.yml"
+export DOCKER_COMPOSE_FILE
 
 # Checks For the working of Docker Engine...
 function is_docker_engine_up {
