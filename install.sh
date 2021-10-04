@@ -61,6 +61,23 @@ current_shell() {
     done <<< "$SHELL"
 }
 
+# Initialize Dockr Directory
+init_dockr_directory() {
+    rm -rf "${DOCKR_DIR_TEMP}"
+    mkdir "${DOCKR_DIR_TEMP}"
+}
+
+# Setup Dockr Binary Files
+setup_dockr_files() {
+    display_process "Adding binary files for Dockr..."
+
+    ## Dockr Setup File
+    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr_setup.sh" >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_SETUP}"
+
+    ## DOCKR
+    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr" >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_DOCKR}"
+}
+
 # Setup Alias File
 # Add alias file to shell rc file
 setup_alias_file() {
@@ -71,10 +88,10 @@ setup_alias_file() {
     # Add RC File Content
     {
         echo "## Dockr Setup"
-        echo "alias dockr_setup_test=${DOCKR_DIR_TEMP}/${DOCKR_FILES_SETUP}"
+        echo "alias dockr_setup_test=${DOCKR_DIR_HOME}/${DOCKR_FILES_SETUP}"
         echo ""
         echo "## Dockr Executable"
-        echo "alias dockr_test=${DOCKR_DIR_TEMP}/${DOCKR_FILES_DOCKR}"
+        echo "alias dockr_test=${DOCKR_DIR_HOME}/${DOCKR_FILES_DOCKR}"
     } >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_ALIAS}"
 
     chmod u+x "${DOCKR_DIR_TEMP}/${DOCKR_FILES_SETUP}"
@@ -102,21 +119,18 @@ setup_alias_file() {
     fi
 }
 
-# Initialize Dockr Directory
-init_dockr_directory() {
-    rm -rf "${DOCKR_DIR_TEMP}"
-    mkdir "${DOCKR_DIR_TEMP}"
-}
+# Add Hosts entry For Dockr
+add_host_entry() {
+    display_process "Adding Hosts Entry for Dockr Networking..."
 
-# Setup Dockr Binary Files
-setup_dockr_files() {
-    display_process "Adding binary files for Dockr..."
-
-    ## Dockr Setup File
-    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr_setup.sh" >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_SETUP}"
-
-    ## DOCKR
-    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr" >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_DOCKR}"
+    if ! grep -q "dockr.host" /etc/hosts; then
+        echo "Enter your system password (if prompted)!"
+        {
+            echo ""
+            echo "# Added by Dockr"
+            echo "127.0.0.1 dockr.host"
+        } | sudo tee -a /etc/hosts > /dev/null
+    fi
 }
 
 # Add Files to Global Gitignore.
@@ -164,20 +178,6 @@ finalize_setup() {
         echo "Kindly run ${BLUE}\"${YELLOW}source ${SHELL_RC}${BLUE}\"${CLR} to Complete the installation"
     else
         display_process "Dockr Installation Completed..."
-    fi
-}
-
-# Add Hosts entry For Dockr
-add_host_entry() {
-    display_process "Adding Hosts Entry for Dockr Networking..."
-
-    if ! grep -q "dockr.host" /etc/hosts; then
-        echo "Enter your system password (if prompted)!"
-        {
-            echo ""
-            echo "# Added by Dockr"
-            echo "127.0.0.1 dockr.host"
-        } | sudo tee -a /etc/hosts > /dev/null
     fi
 }
 

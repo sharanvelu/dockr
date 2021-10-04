@@ -25,8 +25,21 @@ fi
 # Define custom environment variables
 export APP_PORT=${APP_PORT:-80}
 
-DOCKER_COMPOSE_FILE="$(pwd)/docker-compose-local.yml"
+PROJECT_DIR=$(basename "$(pwd)")
+PROJECT_DIR=${PROJECT_DIR// /_}
+export PROJECT_DIR
+
+# Docker Compose file.
+DOCKER_COMPOSE_FILE_NAME="dockr-compose.yml"
+DOCKER_COMPOSE_FILE="$(pwd)/${DOCKER_COMPOSE_FILE_NAME}"
 export DOCKER_COMPOSE_FILE
+
+# Checks if dockr-compose.yml file exists or not.
+if [ ! -f "${DOCKER_COMPOSE_FILE}" ]; then
+    echo -e "${RED}\"${DOCKER_COMPOSE_FILE_NAME}\" file not found in the current working directory.${CLR}"
+    echo "Exiting..."
+    exit 1
+fi
 
 # Checks For the working of Docker Engine...
 function is_docker_engine_up {
