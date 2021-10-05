@@ -17,7 +17,7 @@ BLUE='\033[1;34m'
 CYAN='\033[1;36m'
 
 ## Dockr Branch
-DOCKR_BRANCH="global-dockr"
+DOCKR_BRANCH="release"
 
 ## DIRECTORY
 DOCKR_DIR_HOME="${HOME}/Dockr"
