@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 ## Dockr By SHARAN
 
@@ -94,7 +94,7 @@ if [ $# -gt 0 ]; then
 
         BASEDIR=$(dirname "$0")
 
-        if [ -f $(pwd)/dockr ]; then
+        if [ -f "$(pwd)/dockr" ]; then
             echo -e "${RED}Dockr exec file already exists.${CLR}" >&2
             echo -e "If you want to create a new Dockr exec file,"
             echo -e "Remove the existing file manually or by running : \"${BLUE}dockr_setup remove${CLR}\""

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 ## Dockr by Sharan
 
@@ -42,7 +42,7 @@ if [ ! -f "${DOCKER_COMPOSE_FILE}" ]; then
 fi
 
 # Checks For the working of Docker Engine...
-function is_docker_engine_up {
+is_docker_engine_up() {
     if ! docker info > /dev/null 2>&1; then
         echo -e "${WHITE}Docker is not running.${CLR}" >&2
 
@@ -51,17 +51,17 @@ function is_docker_engine_up {
 }
 
 # Checks For Dockr Running...
-function is_dockr_up {
+is_dockr_up() {
     # If needs to skip checking for dockr and
     if [ -z "$DO_NOT_CHECK_DOCKR" ]; then
         if docker-compose -f "$DOCKER_COMPOSE_FILE" ps | grep -q web
         then
             # Check if there is exited web containers
-            EXITED_STATE="$(docker-compose -f $DOCKER_COMPOSE_FILE ps | grep web | grep exited)"
+            EXITED_STATE="$(docker-compose -f "${DOCKER_COMPOSE_FILE}" ps | grep web | grep exited)"
             if [ -n "$EXITED_STATE" ]; then
                 dockr_container_is_stopped
 
-            elif [ -n "$(docker-compose -f $DOCKER_COMPOSE_FILE ps -q)" ]; then
+            elif [ -n "$(docker-compose -f "${DOCKER_COMPOSE_FILE}" ps -q)" ]; then
                 cat null > /dev/null 2>&1
                 PROCEED_EXECUTION=1
             fi
@@ -73,7 +73,7 @@ function is_dockr_up {
 }
 
 # Function that output Dockr container is not running.
-function dockr_is_down {
+dockr_is_down() {
     echo -e "${RED}No ${WHITE}Dockr container is running.${CLR}" >&2
     echo "" >&2
     echo -e "${WHITE}You can run Dockr using any one of the following commands:${CLR}" >&2
@@ -84,7 +84,7 @@ function dockr_is_down {
 }
 
 # Function that output Dockr container is stopped and not terminated.
-function dockr_container_is_stopped {
+dockr_container_is_stopped() {
     echo -e "${WHITE}The Dockr container${CLR}(s) ${WHITE}is ${RED}stopped.${CLR}" >&2
     echo "" >&2
     echo -e "${WHITE}You can start the Dockr container${CLR}(s) ${WHITE}using any one of the following commands:${CLR}" >&2

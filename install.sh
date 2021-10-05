@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+## Dockr by Sharan
 
 # This script should be run via curl:
 #   sh -c "$(curl -fsSL https://raw.githubusercontent.com/sharanvelu/dockr/release/install.sh)"
@@ -27,20 +29,23 @@ DOCKR_DIR_TEMP="${HOME}/Dockr_TEMP"
 # FILES NAME
 DOCKR_FILES_SETUP="dockr_setup"
 DOCKR_FILES_ALIAS=".dockr_aliases"
-DOCKR_FILES_DOCKR="dockr"
+DOCKR_FILES_DOCKR=".dockr"
 FILES_GITIGNORE=".gitignore_global"
+DOCKR_FILES_DOCKER_COMPOSE_PROJECT="docker-compose-local.yml"
+DOCKR_FILES_DOCKER_COMPOSE_GLOBAL="dockr-compose.yml"
+DOCKR_FILES_DOCKER_COMPOSE_ASSET="dockr-compose-asset.yml"
 
 # Display Process
 display_process() {
-    echo ""
-    echo "$*"
+    echo -e ""
+    echo -e "$*"
 }
 
 # Exit the Installation Process
 exiting() {
-    echo ""
-    echo "${RED}${*}${CLR}"
-    echo "Exiting the installation Process..."
+    echo -e ""
+    echo -e "${RED}${*}${CLR}"
+    echo -e "Exiting the installation Process..."
 
     rm -rf "${DOCKR_DIR_TEMP}"
 
@@ -72,10 +77,14 @@ setup_dockr_files() {
     display_process "Adding binary files for Dockr..."
 
     ## Dockr Setup File
-    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr_setup.sh" >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_SETUP}"
+    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/res/bin/dockr_setup.sh" >> "${DOCKR_DIR_TEMP}/res/bin/${DOCKR_FILES_SETUP}"
 
     ## DOCKR
     curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr" >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_DOCKR}"
+
+    ## dockr-compose Files
+    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/res/dockr-compose.yml" >> "${DOCKR_DIR_TEMP}/res/${DOCKR_FILES_DOCKER_COMPOSE_GLOBAL}"
+    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr-compose-asset.yml" >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_DOCKER_COMPOSE_ASSET}"
 }
 
 # Setup Alias File
@@ -84,24 +93,20 @@ setup_alias_file() {
     display_process "Adding Alias Files for Dockr..."
 
     # Create RC File
-    touch "${DOCKR_DIR_TEMP}/${DOCKR_FILES_ALIAS}"
+    touch "${DOCKR_DIR_TEMP}/res/${DOCKR_FILES_ALIAS}"
     # Add RC File Content
     {
-        echo "## Dockr Setup"
-        echo "alias dockr_setup_test=${DOCKR_DIR_HOME}/${DOCKR_FILES_SETUP}"
-        echo ""
-        echo "## Dockr Executable"
-        echo "alias dockr_test=${DOCKR_DIR_HOME}/${DOCKR_FILES_DOCKR}"
-    } >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_ALIAS}"
+        echo -e "## Dockr Executable"
+        echo -e "alias dockr_test=\"${DOCKR_DIR_HOME}/${DOCKR_FILES_DOCKR}\""
+    } >> "${DOCKR_DIR_TEMP}/res/${DOCKR_FILES_ALIAS}"
 
-    chmod u+x "${DOCKR_DIR_TEMP}/${DOCKR_FILES_SETUP}"
     chmod u+x "${DOCKR_DIR_TEMP}/${DOCKR_FILES_DOCKR}"
 
     case $CURRENT_SHELL_NAME in
         "zsh") SHELL_RC="${HOME}/.zshrc";;
         "bash") SHELL_RC="${HOME}/.bashrc";;
         *)
-            echo "Shell ${RED}${CURRENT_SHELL_NAME} is not supported${CLR} for now."
+            echo -e "Shell ${RED}${CURRENT_SHELL_NAME} is not supported${CLR} for now."
             exiting "Supported Shells are ${YELLOW}ZSH${CLR}, ${YELLOW}BASH${CLR}.";;
     esac
 
@@ -111,9 +116,9 @@ setup_alias_file() {
 
     if ! grep -q "${DOCKR_FILES_ALIAS}" "$SHELL_RC"; then
         {
-            echo ""
-            echo "# Dockr related Alias File"
-            echo ". ${DOCKR_DIR_TEMP}/${DOCKR_FILES_ALIAS}"
+            echo -e ""
+            echo -e "# Dockr related Alias File"
+            echo -e ". ${DOCKR_DIR_HOME}/res/${DOCKR_FILES_ALIAS}"
         } >> "${SHELL_RC}"
         DOCKR_ALIAS_FILE_ADDED=1
     fi
@@ -124,12 +129,14 @@ add_host_entry() {
     display_process "Adding Hosts Entry for Dockr Networking..."
 
     if ! grep -q "dockr.host" /etc/hosts; then
-        echo "Enter your system password (if prompted)!"
+        echo -e "Enter your system password (if prompted)!"
         {
             echo ""
             echo "# Added by Dockr"
             echo "127.0.0.1 dockr.host"
         } | sudo tee -a /etc/hosts > /dev/null
+    else
+        echo -e "Hosts entry already exists..."
     fi
 }
 
@@ -137,33 +144,33 @@ add_host_entry() {
 setup_gitignore() {
     display_process "Configuring Global Gitignore..."
 
-    echo "Checking ${CYAN}git${CLR} installation..."
+    echo -e "Checking ${CYAN}git${CLR} installation..."
     command_exists git || {
         exiting "git is not installed..."
     }
 
     if ! git config --global -l | grep -q "core.excludesfile"
     then
-        echo "Global gitignore is ${RED}not set.${CLR}"
-        echo "Setting up global gitignore."
+        echo -e "Global gitignore is ${RED}not set.${CLR}"
+        echo -e "Setting up global gitignore."
 
         if [ ! -f "${HOME}/${FILES_GITIGNORE}" ]; then
             touch "${HOME}/${FILES_GITIGNORE}"
         fi
 
-        echo "Global Gitignore configuration ${GREEN}successful${CLR}."
-        echo "Global Gitignore file is set to : ${CYAN}${FILES_GITIGNORE}${CLR}."
+        echo -e "Global Gitignore configuration ${GREEN}successful${CLR}."
+        echo -e "Global Gitignore file is set to : ${CYAN}${FILES_GITIGNORE}${CLR}."
         GITIGNORE_FILE="${HOME}/${FILES_GITIGNORE}"
     else
         GITIGNORE_FILE="$(git config --get core.excludesfile)"
     fi
 
-    if ! grep -q "dockr-compose.yml" "${GITIGNORE_FILE}"
+    if ! grep -q "${DOCKR_FILES_DOCKER_COMPOSE_PROJECT}" "${GITIGNORE_FILE}"
     then
-        echo "dockr-compose.yml" >> "${GITIGNORE_FILE}"
-        echo "${YELLOW}dockr-compose.yml${CLR} Added to ${CYAN}global gitignore file${CLR}."
+        echo -e "${DOCKR_FILES_DOCKER_COMPOSE_PROJECT}" >> "${GITIGNORE_FILE}"
+        echo -e "${YELLOW}${DOCKR_FILES_DOCKER_COMPOSE_PROJECT}${CLR} Added to ${CYAN}global gitignore file${CLR}."
     else
-        echo "Global gitignore already configured..."
+        echo -e "Global gitignore already configured..."
     fi
 }
 
@@ -175,13 +182,13 @@ finalize_setup() {
 
     if [ -n "$DOCKR_ALIAS_FILE_ADDED" ]; then
         display_process "Files initiation Complete..."
-        echo "Kindly run ${BLUE}\"${YELLOW}source ${SHELL_RC}${BLUE}\"${CLR} to Complete the installation"
+        echo -e "Kindly run ${BLUE}\"${YELLOW}source ${SHELL_RC}${BLUE}\"${CLR} to Complete the installation"
     else
         display_process "Dockr Installation Completed..."
     fi
 }
 
-echo "Beginning Installation..."
+echo -e "Beginning Installation..."
 
 init_dockr_directory
 
