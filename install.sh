@@ -87,8 +87,8 @@ init_dockr_directory() {
 setup_dockr_files() {
     display_process "Adding binary files for Dockr..."
 
-    ## Dockr Setup File
-    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/res/bin/dockr_setup.sh" >> "${DOCKR_DIR_TEMP}/res/bin/${DOCKR_FILES_SETUP}"
+#    ## Dockr Setup File
+#    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/res/bin/dockr_setup.sh" >> "${DOCKR_DIR_TEMP}/res/bin/${DOCKR_FILES_SETUP}"
 
     ## DOCKR
     curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr" >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_DOCKR}"
@@ -211,7 +211,7 @@ setup_dockr_files
 
 setup_alias_file
 
-setup_gitignore
+#setup_gitignore
 
 add_host_entry
 
