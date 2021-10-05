@@ -7,16 +7,6 @@ RED='\033[1;31m'
 YELLOW='\033[1;33m'
 WHITE='\033[1;37m'
 
-# Verify operating system is supported
-case "$(uname -s)" in
-    Linux*) ;;
-    Darwin*) ;;
-    *)
-      echo "OS (operating system) ([$(uname -s)]) not supported." >&2
-      echo "Dockr supports macOS, Linux, and Windows (WSL2)." >&2
-      exit 1
-esac
-
 # Source the ".env" file so Laravel's environment variables are available
 if [ -f ./.env ]; then
     source ./.env

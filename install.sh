@@ -54,8 +54,20 @@ command_exists() {
     command -v "$@" >/dev/null 2>&1
 }
 
+system_check() {
+    # Verifying operating system
+    case "$(uname -s)" in
+        Linux*) ;;
+        Darwin*) ;;
+        *)
+          echo "OS (operating system) ([$(uname -s)]) not supported." >&2
+          echo "Dockr supports macOS, Linux, and Windows (WSL2)." >&2
+          exit 1
+    esac
+}
+
 # Determine the current Shell for the logged in User.
-current_shell() {
+shell_check() {
     while IFS='/' read -ra ADDR; do
         for i in "${ADDR[@]}"; do
             CURRENT_SHELL_NAME="$i"
@@ -189,11 +201,13 @@ finalize_setup() {
 
 echo -e "Beginning Installation..."
 
+system_check
+
+shell_check
+
 init_dockr_directory
 
 setup_dockr_files
-
-current_shell
 
 setup_alias_file
 
