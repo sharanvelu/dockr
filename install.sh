@@ -3,14 +3,11 @@
 ## Dockr by Sharan
 
 # This script should be run via curl:
-#   sh -c "$(curl -fsSL https://raw.githubusercontent.com/sharanvelu/dockr/release/install.sh)"
+#   bash -c "$(curl -fsSL https://raw.githubusercontent.com/sharanvelu/dockr/release/install.sh)"
 # or via wget:
-#   sh -c "$(wget -qO- https://raw.githubusercontent.com/sharanvelu/dockr/release/install.sh)"
+#   bash -c "$(wget -qO- https://raw.githubusercontent.com/sharanvelu/dockr/release/install.sh)"
 # or via fetch:
-#   sh -c "$(fetch -o - https://raw.githubusercontent.com/sharanvelu/dockr/release/install.sh)"
-#
-# Then Run from your terminal
-#   . ~/.dockr/dockr_rc
+#   bash -c "$(fetch -o - https://raw.githubusercontent.com/sharanvelu/dockr/release/install.sh)"
 
 CLR='\033[0m'
 RED='\033[1;31m'
@@ -27,9 +24,9 @@ DOCKR_DIR_HOME="${HOME}/Dockr"
 DOCKR_DIR_TEMP="${HOME}/Dockr_TEMP"
 
 # FILES NAME
+DOCKR_FILES_DOCKR="dockr"
 DOCKR_FILES_SETUP="dockr_setup"
 DOCKR_FILES_ALIAS=".dockr_aliases"
-DOCKR_FILES_DOCKR=".dockr"
 FILES_GITIGNORE=".gitignore_global"
 DOCKR_FILES_DOCKER_COMPOSE_PROJECT="docker-compose-local.yml"
 DOCKR_FILES_DOCKER_COMPOSE_GLOBAL="dockr-compose.yml"
@@ -70,6 +67,8 @@ current_shell() {
 init_dockr_directory() {
     rm -rf "${DOCKR_DIR_TEMP}"
     mkdir "${DOCKR_DIR_TEMP}"
+    mkdir "${DOCKR_DIR_TEMP}/res"
+    mkdir "${DOCKR_DIR_TEMP}/res/bin"
 }
 
 # Setup Dockr Binary Files
@@ -97,7 +96,7 @@ setup_alias_file() {
     # Add RC File Content
     {
         echo -e "## Dockr Executable"
-        echo -e "alias dockr_test=\"${DOCKR_DIR_HOME}/${DOCKR_FILES_DOCKR}\""
+        echo -e "alias dockr=\"${DOCKR_DIR_HOME}/${DOCKR_FILES_DOCKR}\""
     } >> "${DOCKR_DIR_TEMP}/res/${DOCKR_FILES_ALIAS}"
 
     chmod u+x "${DOCKR_DIR_TEMP}/${DOCKR_FILES_DOCKR}"
