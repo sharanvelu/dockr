@@ -37,7 +37,7 @@ PROJECT_NAME=${PROJECT_NAME// /-}
 export PROJECT_NAME
 
 # Docker Compose file.
-DOCKER_COMPOSE_FILE_NAME="docker-compose-local.yml"
+DOCKER_COMPOSE_FILE_NAME="docker-compose-dev-temp.yml"
 DOCKER_COMPOSE_FILE="$(pwd)/${DOCKER_COMPOSE_FILE_NAME}"
 export DOCKER_COMPOSE_FILE
 
