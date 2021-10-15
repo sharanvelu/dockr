@@ -1,0 +1,47 @@
+version: '3.5'
+
+services:
+    mysql:
+        image: ubuntu/mysql
+        container_name: dockr_mysql
+        ports:
+            - '3306:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
+            MYSQL_DATABASE: 'dockr'
+            MYSQL_USER: '${MYSQL_USERNAME}'
+            MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        volumes:
+            - dockr_mysql:/var/lib/mysql
+        command: ["--default-authentication-plugin=mysql_native_password"]
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-ppassword"]
+            retries: 3
+            timeout: 5s
+        networks:
+            - dockr
+
+    redis:
+        image: 'redis:alpine'
+        container_name: dockr_redis
+        ports:
+            - '${FORWARD_REDIS_PORT:-6379}:6379'
+        volumes:
+            - dockr_redis:/data
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            retries: 3
+            timeout: 5s
+        networks:
+            - dockr
+
+networks:
+    dockr:
+        external: true
+
+volumes:
+    dockr_mysql:
+        driver: local
+    dockr_redis:
+        driver: local
