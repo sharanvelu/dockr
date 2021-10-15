@@ -150,6 +150,7 @@ dockr_network_check() {
 asset_container_check() {
     if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep mysql | grep -q running
     then
+        DOCKR_ASSET_MYSQL_STARTED=1
         SHOULD_START_ASSET_CONTAINER=1
     fi
 
@@ -163,13 +164,12 @@ asset_container_check() {
         docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr up -d
         echo -e "Asset containers ${GREEN}started${CLR}."
         echo -e ""
-        DOCKR_ASSET_CONTAINER_STARTED=1
     fi
 }
 
 check_project_database() {
     echo -e "Checking for database presence : ${CYAN}${DB_DATABASE}${CLR}."
-    if [ -n "${DOCKR_ASSET_CONTAINER_STARTED}" ]; then
+    if [ -n "${DOCKR_ASSET_MYSQL_STARTED}" ]; then
         sleep 3
     fi
 
