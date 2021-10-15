@@ -209,14 +209,6 @@ if [ $# -gt 0 ]; then
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
             php "$@"
 
-    # Run "./vendor/bin" (Binary) Command within web container.
-    elif [ "$1" == "bin" ]; then
-        shift 1
-        is_dockr_up
-
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            ./vendor/bin/"$*"
-
     # Run "Composer" Command within web container.
     elif [ "$1" == "composer" ]; then
         shift 1
@@ -224,6 +216,14 @@ if [ $# -gt 0 ]; then
 
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
             composer "$@"
+
+    # Run "./vendor/bin" (Binary) Command within web container.
+    elif [ "$1" == "bin" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
+            ./vendor/bin/"$*"
 
     # Run" PHP Artisan" Command within web container.
     elif [ "$1" == "artisan" ] || [ "$1" == "art" ]; then
@@ -317,13 +317,21 @@ if [ $# -gt 0 ]; then
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
             bash "$@"
 
+    # Run PhpUnit inside the container
+    elif [ "$1" == "phpunit" ]; then
+        shift 1
+        is_dockr_up
+
+        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
+            ./vendor/bin/phpunit "$@"
+
     # Initiate a session within mysql container.
     elif [ "$1" == "mysql" ]; then
         shift 1
         is_dockr_up
 
         docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql \
-            bash -c "MYSQL_PWD=${MYSQL_PASSWORD} mysql -u ${MYSQL_USERNAME} $1"
+            bash -c "MYSQL_PWD=password mysql -u root $1"
 
     # Initiate a Redis Session within Redis container is available.
     elif [ "$1" == "redis" ] ; then
