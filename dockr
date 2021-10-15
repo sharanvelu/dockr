@@ -41,6 +41,9 @@ DOCKER_COMPOSE_FILE_NAME="docker-compose-dev-temp.yml"
 DOCKER_COMPOSE_FILE="$(pwd)/${DOCKER_COMPOSE_FILE_NAME}"
 export DOCKER_COMPOSE_FILE
 
+# Network
+DOCKR_NETWORK="dockr"
+
 # Checks if dockr-compose.yml file exists or not.
 if [ ! -f "${DOCKER_COMPOSE_FILE}" ]; then
     DOCKER_COMPOSE_FILE="${DOCKR_HOME_DIR}/res/dockr-compose.yml"
@@ -138,9 +141,9 @@ dockr_asset_container_is_stopped() {
 
 # Check for Dockr Network
 dockr_network_check() {
-    if ! docker network ls | grep -q -w dockr
+    if ! docker network ls | grep -q -w "${DOCKR_NETWORK}"
     then
-        docker network create dockr >> /dev/null
+        docker network create "${DOCKR_NETWORK}" >> /dev/null
         echo -e "${GREEN}Dockr Network Created.${CLR}"
         echo -e ""
     fi
@@ -206,7 +209,19 @@ if [ $# -gt 0 ]; then
     elif [ "$1" == "down" ]; then
         shift 1
 
-        if [ "$1" == "asset" ] || [ "$1" == "all" ]; then
+        if [ "$1" == "all" ]; then
+            shift 1
+
+            echo -e "${RED}Stopping${CLR} all containers."
+            docker stop $(docker ps -f "network=${DOCKR_NETWORK}" -q) >> /dev/null
+            docker rm $(docker ps -f "network=${DOCKR_NETWORK}" -q -a) >> /dev/null
+
+            echo -e "All containers ${GREEN}stopped${CLR} successfully."
+
+            exit 0
+        fi
+
+        if [ "$1" == "asset" ]; then
             shift 1
 
             TERMINATE_ASSET_CONTAINER=1
