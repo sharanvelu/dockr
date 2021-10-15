@@ -73,6 +73,14 @@ shell_check() {
             CURRENT_SHELL_NAME="$i"
         done
     done <<< "$SHELL"
+
+    case $CURRENT_SHELL_NAME in
+        "zsh") ;;
+        "bash") ;;
+        *)
+            echo -e "Shell ${RED}${CURRENT_SHELL_NAME} is not supported${CLR} for now."
+            exiting "Supported Shells are ${YELLOW}ZSH${CLR}, ${YELLOW}BASH${CLR}.";;
+    esac
 }
 
 # Initialize Dockr Directory
@@ -117,8 +125,7 @@ setup_alias_file() {
         "zsh") SHELL_RC="${HOME}/.zshrc";;
         "bash") SHELL_RC="${HOME}/.bashrc";;
         *)
-            echo -e "Shell ${RED}${CURRENT_SHELL_NAME} is not supported${CLR} for now."
-            exiting "Supported Shells are ${YELLOW}ZSH${CLR}, ${YELLOW}BASH${CLR}.";;
+            exiting "Unsupported Shell";;
     esac
 
     if [ ! -f "$SHELL_RC" ]; then
