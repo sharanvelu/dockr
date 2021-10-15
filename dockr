@@ -68,11 +68,28 @@ is_dockr_up() {
 
             elif [ -n "$(docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps -q)" ]; then
                 cat null > /dev/null 2>&1
-                PROCEED_EXECUTION=1
+                TERMINATE_EXECUTION=1
             fi
         fi
-        if [ -z "${PROCEED_EXECUTION}" ]; then
+        if [ -z "${TERMINATE_EXECUTION}" ]; then
             dockr_is_down
+        fi
+    fi
+}
+
+# Checks For Dockr Asset Containers...
+is_dockr_asset_up() {
+    # If needs to skip checking for dockr and
+    if [ -z "${DO_NOT_CHECK_DOCKR}" ]; then
+        if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep -q "$1"
+        then
+            # Check if there is exited mysql containers
+            EXITED_STATE="$(docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep "$1" | grep exited)"
+            if [ -n "${EXITED_STATE}" ]; then
+                dockr_asset_container_is_stopped "$1"
+            fi
+        else
+            dockr_asset_container_not_running "$1"
         fi
     fi
 }
@@ -88,6 +105,16 @@ dockr_is_down() {
     exit 1
 }
 
+# Function that output Dockr container is not running.
+dockr_asset_container_not_running() {
+    echo -e "${WHITE}Dockr Asset container \"$1\" is ${RED}not running.${CLR}" >&2
+    echo "" >&2
+    echo -e "${WHITE}You can run Dockr asset container using the following command:${CLR}" >&2
+    echo -e "${YELLOW}\"dockr asset up\"${CLR}" >&2
+
+    exit 1
+}
+
 # Function that output Dockr container is stopped and not terminated.
 dockr_container_is_stopped() {
     echo -e "${WHITE}The Dockr container${CLR}(s) ${WHITE}is ${RED}stopped.${CLR}" >&2
@@ -95,6 +122,16 @@ dockr_container_is_stopped() {
     echo -e "${WHITE}You can start the Dockr container${CLR}(s) ${WHITE}using any one of the following commands:${CLR}" >&2
     echo -e "${YELLOW}\"dockr start\" ${CLR}or ${YELLOW}\"dockr up -d\" ${WHITE}For Detached Mode${CLR} or" >&2
     echo -e "${YELLOW}\"dockr up\" ${WHITE}For Normal Mode${CLR}" >&2
+
+    exit 1
+}
+
+# Function that output Dockr container is stopped and not terminated.
+dockr_asset_container_is_stopped() {
+    echo -e "${WHITE}The Dockr asset container \"$1\" is ${RED}stopped.${CLR}" >&2
+    echo "" >&2
+    echo -e "${WHITE}You can start the Dockr asset container${CLR}(s) ${WHITE}using the following command:${CLR}" >&2
+    echo -e "${YELLOW}\"dockr asset up\"${CLR}" >&2
 
     exit 1
 }
@@ -111,8 +148,17 @@ dockr_network_check() {
 
 # Manage Asset Containers (Mysql, Redis, ...)
 asset_container_check() {
-    if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep -q running
+    if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep mysql | grep -q running
     then
+        SHOULD_START_ASSET_CONTAINER=1
+    fi
+
+    if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep redis | grep -q running
+    then
+        SHOULD_START_ASSET_CONTAINER=1
+    fi
+
+    if [ -n "${SHOULD_START_ASSET_CONTAINER}" ]; then
         echo -e "Starting asset containers..."
         docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr up -d
         echo -e "Asset containers ${GREEN}started${CLR}."
@@ -128,11 +174,11 @@ check_project_database() {
     fi
 
     # Create DB with specified name is not present.
-    if ! MYSQL_PWD="${MYSQL_ROOT_PASSWORD}" mysql -h 127.0.0.1 -u root -e "show databases" | grep -q -w "${DB_DATABASE}"
+    if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=password mysql -u root -e \"show databases;\"" | grep -q -w "${DB_DATABASE}"
     then
         echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
-        MYSQL_PWD="${MYSQL_ROOT_PASSWORD}" mysql -h 127.0.0.1 -u root -e "create database ${DB_DATABASE}" >> /dev/null
-        MYSQL_PWD="${MYSQL_ROOT_PASSWORD}" mysql -h 127.0.0.1 -u root -e "GRANT ALL PRIVILEGES ON ${DB_DATABASE}.* TO '${MYSQL_USERNAME}'@'%'" >> /dev/null
+        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=password mysql -u root -e \"create database ${DB_DATABASE}\"" >> /dev/null
+        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=password mysql -u root -e \"GRANT ALL PRIVILEGES ON ${DB_DATABASE}.* TO '${MYSQL_USERNAME}'@'%'\"" >> /dev/null
         echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} created successfully."
     else
         echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} already exists. Skipping..."
@@ -328,7 +374,7 @@ if [ $# -gt 0 ]; then
     # Initiate a session within mysql container.
     elif [ "$1" == "mysql" ]; then
         shift 1
-        is_dockr_up
+        is_dockr_asset_up mysql
 
         docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql \
             bash -c "MYSQL_PWD=password mysql -u root $1"
@@ -336,7 +382,7 @@ if [ $# -gt 0 ]; then
     # Initiate a Redis Session within Redis container is available.
     elif [ "$1" == "redis" ] ; then
         shift 1
-        is_dockr_up
+        is_dockr_asset_up redis
 
         docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec redis \
             redis-cli
