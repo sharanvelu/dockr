@@ -212,11 +212,16 @@ if [ $# -gt 0 ]; then
         if [ "$1" == "all" ]; then
             shift 1
 
-            echo -e "${RED}Stopping${CLR} all containers."
-            docker stop $(docker ps -f "network=${DOCKR_NETWORK}" -q) >> /dev/null
-            docker rm $(docker ps -f "network=${DOCKR_NETWORK}" -q -a) >> /dev/null
+            PS_RESULTS=$(docker ps -f "network=${DOCKR_NETWORK}" -q)
+            if [ -n "${PS_RESULTS}" ]; then
+                echo -e "${RED}Stopping${CLR} all containers."
+                docker stop ${PS_RESULTS} >> /dev/null
+                docker rm ${PS_RESULTS} >> /dev/null
 
-            echo -e "All containers ${GREEN}stopped${CLR} successfully."
+                echo -e "All containers ${GREEN}stopped${CLR} successfully."
+            else
+                echo -e "${RED}No${CLR} Dockr containers are running."
+            fi
 
             exit 0
         fi
