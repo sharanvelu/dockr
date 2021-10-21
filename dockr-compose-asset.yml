@@ -7,10 +7,10 @@ services:
         ports:
             - '3306:3306'
         environment:
-            MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
-            MYSQL_DATABASE: 'dockr'
-            MYSQL_USER: '${MYSQL_USERNAME}'
-            MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
+            MYSQL_ROOT_PASSWORD: '${DOCKR_MYSQL_ROOT_PASSWORD:-password}'
+            MYSQL_USER: '${DOCKR_MYSQL_USERNAME:-dockr}'
+            MYSQL_PASSWORD: '${DOCKR_MYSQL_PASSWORD:-password}'
+            MYSQL_DATABASE: '${DOCKR_MYSQL_DEFAULT_DATABASE:-dockr}'
             MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
         volumes:
             - dockr_mysql:/var/lib/mysql
@@ -20,7 +20,7 @@ services:
             retries: 3
             timeout: 5s
         networks:
-            - dockr
+            - '${DOCKR_NETWORK:-dockr}'
 
     redis:
         image: 'redis:alpine'
@@ -34,7 +34,7 @@ services:
             retries: 3
             timeout: 5s
         networks:
-            - dockr
+            - '${DOCKR_NETWORK:-dockr}'
 
 networks:
     dockr:
