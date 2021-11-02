@@ -12,6 +12,7 @@ CYAN='\033[1;36m'
 # Dockr Dir
 DOCKR_HOME_DIR="$HOME/Dockr"
 DOCKR_COMPOSE_ASSET="${DOCKR_HOME_DIR}/dockr-compose-asset.yml"
+DOCKR_COMPOSE="${DOCKR_HOME_DIR}/res/dockr-compose.yml"
 
 # Dockr Network
 export DOCKR_NETWORK="dockr"
@@ -23,32 +24,43 @@ export PROJECT_ROOT_DIR
 # Project Name
 PROJECT_NAME=$(basename "${PROJECT_ROOT_DIR}")
 PROJECT_NAME=${PROJECT_NAME// /-}
+PROJECT_NAME=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
 export PROJECT_NAME
 
-export DOCKR_MYSQL_USERNAME="dockr"
-export DOCKR_MYSQL_PASSWORD="password"
-export DOCKR_MYSQL_ROOT_PASSWORD="password"
+# Dockr Asset Credentials
+export DOCKR_ASSET_USERNAME="dockr"
+export DOCKR_ASSET_PASSWORD="password"
 
 # Source the ".env" file so Laravel's environment variables are available
 if [ -f "${PROJECT_ROOT_DIR}/.env" ]; then
     source "${PROJECT_ROOT_DIR}/.env"
 fi
 
+# Container Name
+export DOCKR_CONTAINER_NAME=${DOCKR_CONTAINER_NAME:-"${PROJECT_NAME}-web"}
+
 # Define custom environment variables
-export APP_PORT=${APP_PORT:-80}
-export APP_PHP_VERSION=${APP_PHP_VERSION:-8.0}
-export DOCKR_IMAGE="sharanvelu/laravel-php:${APP_PHP_VERSION}"
-export APP_DOCKR_IMAGE=${APP_DOCKER_IMAGE:-"${DOCKR_IMAGE}"}
+export DOCKR_PORT=${DOCKR_PORT:-80}
+export DOCKR_PHP_VERSION=${DOCKR_PHP_VERSION:-8.0}
+if [ -z "${DOCKR_DOCKER_IMAGE}" ]; then
+    DOCKR_DOCKER_IMAGE="sharanvelu/laravel-php:${DOCKR_PHP_VERSION}"
+fi
+export DOCKR_DOCKER_IMAGE
 
 # Docker Compose file.
-DOCKER_COMPOSE_FILE_NAME="docker-compose-dev-temp.yml"
-DOCKER_COMPOSE_FILE="$(pwd)/${DOCKER_COMPOSE_FILE_NAME}"
+DOCKER_COMPOSE_FILE="${DOCKR_COMPOSE}"
+if [ -n "${DOCKR_CUSTOM_COMPOSE_FILE}" ]; then
+    DOCKER_COMPOSE_FILE="$(pwd)/${DOCKR_CUSTOM_COMPOSE_FILE}"
+    if [ ! -f "${DOCKER_COMPOSE_FILE}" ]; then
+        echo -e "${BLUE}Docker Compose File${CLR} Specified in ${YELLOW}DOCKR_DOCKER_COMPOSE_FILE${CLR} does not exist."
+        echo -e "Please check whether the file ${YELLOW}\"${DOCKER_COMPOSE_FILE}\"${CLR} exists."
+
+        exit 1
+    fi
+    echo ''
+fi
 export DOCKER_COMPOSE_FILE
 
-# Checks if dockr-compose.yml file exists or not.
-if [ ! -f "${DOCKER_COMPOSE_FILE}" ]; then
-    DOCKER_COMPOSE_FILE="${DOCKR_HOME_DIR}/res/dockr-compose.yml"
-fi
 
 # Checks For the working of Docker Engine...
 is_docker_engine_up() {
@@ -158,6 +170,12 @@ asset_container_check() {
         SHOULD_START_ASSET_CONTAINER=1
     fi
 
+    if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep postgres | grep -q running
+    then
+        DOCKR_ASSET_POSTGRES_STARTED=1
+        SHOULD_START_ASSET_CONTAINER=1
+    fi
+
     if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep redis | grep -q running
     then
         SHOULD_START_ASSET_CONTAINER=1
@@ -172,23 +190,34 @@ asset_container_check() {
 }
 
 check_project_database() {
-    echo -e "Checking for database presence : ${CYAN}${DB_DATABASE}${CLR}."
-    if [ -n "${DOCKR_ASSET_MYSQL_STARTED}" ]; then
-        sleep 3
+    if [ "$DB_CONNECTION" == "mysql" ]; then
+        echo -e "Checking for database presence : ${CYAN}${DB_DATABASE}${CLR}."
+        if [ -n "${DOCKR_ASSET_MYSQL_STARTED}" ]; then
+            sleep 3
+        fi
+
+        # Create DB with specified name is not present.
+        if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"show databases;\"" | grep -q -w "${DB_DATABASE}"
+        then
+            echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
+            docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"create database ${DB_DATABASE}\"" >> /dev/null
+            docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"GRANT ALL PRIVILEGES ON ${DB_DATABASE}.* TO '${DOCKR_ASSET_USERNAME}'@'%'\"" >> /dev/null
+            echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} created successfully."
+        else
+            echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} already exists. Skipping..."
+        fi
+
+        echo -e ""
     fi
 
-    # Create DB with specified name is not present.
-    if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=${DOCKR_MYSQL_ROOT_PASSWORD} mysql -u root -e \"show databases;\"" | grep -q -w "${DB_DATABASE}"
-    then
-        echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=${DOCKR_MYSQL_ROOT_PASSWORD} mysql -u root -e \"create database ${DB_DATABASE}\"" >> /dev/null
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=${DOCKR_MYSQL_ROOT_PASSWORD} mysql -u root -e \"GRANT ALL PRIVILEGES ON ${DB_DATABASE}.* TO '${DOCKR_MYSQL_USERNAME}'@'%'\"" >> /dev/null
-        echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} created successfully."
-    else
-        echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} already exists. Skipping..."
-    fi
-
-    echo -e ""
+#    if [ "$DB_CONNECTION" == "pgsql" ] || [ "$DB_CONNECTION" == "postgres" ]; then
+#        echo -e "Checking for database presence : ${CYAN}${DB_DATABASE}${CLR}."
+#        if [ -n "${DOCKR_ASSET_POSTGRES_STARTED}" ]; then
+#            sleep 3
+#        fi
+#
+#        echo -e ""
+#    fi
 }
 
 if [ $# -gt 0 ]; then
@@ -398,7 +427,7 @@ if [ $# -gt 0 ]; then
         is_dockr_asset_up mysql
 
         docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql \
-            bash -c "MYSQL_PWD=password mysql -u root $1"
+            bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root $1"
 
     # Initiate a Redis Session within Redis container is available.
     elif [ "$1" == "redis" ] ; then

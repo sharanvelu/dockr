@@ -7,9 +7,9 @@ services:
         ports:
             - '3306:3306'
         environment:
-            MYSQL_ROOT_PASSWORD: '${DOCKR_MYSQL_ROOT_PASSWORD:-password}'
-            MYSQL_USER: '${DOCKR_MYSQL_USERNAME:-dockr}'
-            MYSQL_PASSWORD: '${DOCKR_MYSQL_PASSWORD:-password}'
+            MYSQL_ROOT_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
+            MYSQL_USER: '${DOCKR_ASSET_USERNAME:-dockr}'
+            MYSQL_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
             MYSQL_DATABASE: '${DOCKR_MYSQL_DEFAULT_DATABASE:-dockr}'
             MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
         volumes:
@@ -19,6 +19,21 @@ services:
             test: ["CMD", "mysqladmin", "ping", "-ppassword"]
             retries: 3
             timeout: 5s
+        networks:
+            - '${DOCKR_NETWORK:-dockr}'
+
+    postgres:
+        image: postgres
+        container_name: dockr_postgres
+        ports:
+            - '5432:5432'
+        environment:
+            POSTGRES_USER: '${DOCKR_ASSET_USERNAME:-dockr}'
+            POSTGRES_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
+            POSTGRES_DB: 'km'
+        volumes:
+            - dockr_postgres:/var/lib/postgresql/data
+        restart: always
         networks:
             - '${DOCKR_NETWORK:-dockr}'
 
