@@ -279,7 +279,7 @@ if [ $# -gt 0 ]; then
         if [ "$1" == "all" ]; then
             shift 1
 
-            PS_RESULTS=$(docker ps -f "network=${DOCKR_NETWORK}" -q)
+            PS_RESULTS=$(docker ps -f "network=${DOCKR_NETWORK}" -q -a)
             if [ -n "${PS_RESULTS}" ]; then
                 echo -e "${RED}Stopping${CLR} all containers."
                 docker stop ${PS_RESULTS} >> /dev/null
