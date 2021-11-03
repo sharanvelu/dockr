@@ -27,9 +27,13 @@ PROJECT_NAME=${PROJECT_NAME// /-}
 PROJECT_NAME=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
 export PROJECT_NAME
 
+# Dockr Asset Project Name
+DOCKR_ASSET_PROJECT_NAME="dockr_asset"
+
 # Dockr Asset Credentials
 export DOCKR_ASSET_USERNAME="dockr"
 export DOCKR_ASSET_PASSWORD="password"
+export DOCKR_ASSET_DEFAULT_DATABASE="dockr"
 
 # Source the ".env" file so Laravel's environment variables are available
 if [ -f "${PROJECT_ROOT_DIR}/.env" ]; then
@@ -104,10 +108,16 @@ is_dockr_up() {
 is_dockr_asset_up() {
     # If needs to skip checking for dockr and
     if [ -z "${DO_NOT_CHECK_DOCKR}" ]; then
-        if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep -q "$1"
+        # Check if Docker asset containers are up (To avoid "not found" result in CLI)
+        if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
+        then
+            dockr_asset_container_not_running "$1"
+        fi
+
+        if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep -q "$1"
         then
             # Check if there is exited mysql containers
-            EXITED_STATE="$(docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep "$1" | grep exited)"
+            EXITED_STATE="$(docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep "$1" | grep exited)"
             if [ -n "${EXITED_STATE}" ]; then
                 dockr_asset_container_is_stopped "$1"
             fi
@@ -171,25 +181,26 @@ dockr_network_check() {
 
 # Manage Asset Containers (Mysql, Redis, ...)
 asset_container_check() {
-    if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ls | grep dockr >> /dev/null
+    # Check if Docker asset containers are up (To avoid "not found" result in CLI)
+    if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
     then
         DOCKR_ASSET_MYSQL_STARTED=1
         DOCKR_ASSET_POSTGRES_STARTED=1
         SHOULD_START_ASSET_CONTAINER=1
     else
-        if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep mysql | grep -q running
+        if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep mysql | grep -q running
         then
             DOCKR_ASSET_MYSQL_STARTED=1
             SHOULD_START_ASSET_CONTAINER=1
         fi
 
-        if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep postgres | grep -q running
+        if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep postgres | grep -q running
         then
             DOCKR_ASSET_POSTGRES_STARTED=1
             SHOULD_START_ASSET_CONTAINER=1
         fi
 
-        if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr ps | grep redis | grep -q running
+        if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep redis | grep -q running
         then
             SHOULD_START_ASSET_CONTAINER=1
         fi
@@ -197,41 +208,53 @@ asset_container_check() {
 
     if [ -n "${SHOULD_START_ASSET_CONTAINER}" ]; then
         echo -e "Starting asset containers..."
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr up -d
+        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" up -d
         echo -e "Asset containers ${GREEN}started${CLR}."
         echo -e ""
     fi
 }
 
 check_project_database() {
-    if [ "$DB_CONNECTION" == "mysql" ]; then
-        echo -e "Checking for database presence : ${CYAN}${DB_DATABASE}${CLR}."
-        if [ -n "${DOCKR_ASSET_MYSQL_STARTED}" ]; then
-            sleep 3
+    if [ -z "${DOCKR_SKIP_DB_CHECK}" ]; then
+        if [ "$DB_CONNECTION" == "mysql" ]; then
+            echo -e "Checking for database ${CYAN}${DB_DATABASE}${CLR} presence in Mysql."
+            if [ -n "${DOCKR_ASSET_MYSQL_STARTED}" ]; then
+                sleep 3
+            fi
+
+            # Create DB with specified name is not present.
+            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"show databases;\"" | grep -q -w "${DB_DATABASE}"
+            then
+                echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"create database ${DB_DATABASE}\"" >> /dev/null
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"GRANT ALL PRIVILEGES ON ${DB_DATABASE}.* TO '${DOCKR_ASSET_USERNAME}'@'%'\"" >> /dev/null
+                echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} created successfully."
+            else
+                echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} already exists. Skipping..."
+            fi
+
+            echo -e ""
         fi
 
-        # Create DB with specified name is not present.
-        if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"show databases;\"" | grep -q -w "${DB_DATABASE}"
-        then
-            echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
-            docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"create database ${DB_DATABASE}\"" >> /dev/null
-            docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"GRANT ALL PRIVILEGES ON ${DB_DATABASE}.* TO '${DOCKR_ASSET_USERNAME}'@'%'\"" >> /dev/null
-            echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} created successfully."
-        else
-            echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} already exists. Skipping..."
-        fi
+        if [ "$DB_CONNECTION" == "pgsql" ] || [ "$DB_CONNECTION" == "postgres" ]; then
+            echo -e "Checking for database ${CYAN}${DB_DATABASE}${CLR} presence in Postgres."
+            if [ -n "${DOCKR_ASSET_POSTGRES_STARTED}" ]; then
+                sleep 3
+            fi
 
-        echo -e ""
+            # Create DB with specified name is not present.
+            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres psql --username=dockr -l | grep -q -w "${DB_DATABASE}"
+            then
+                echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres psql -U "${DOCKR_ASSET_USERNAME}" -D "${DOCKR_ASSET_DEFAULT_DATABASE}" -c "create database ${DB_DATABASE}" >> /dev/null
+                echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} created successfully."
+            else
+                echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} already exists. Skipping..."
+            fi
+
+            echo -e ""
+        fi
     fi
-
-#    if [ "$DB_CONNECTION" == "pgsql" ] || [ "$DB_CONNECTION" == "postgres" ]; then
-#        echo -e "Checking for database presence : ${CYAN}${DB_DATABASE}${CLR}."
-#        if [ -n "${DOCKR_ASSET_POSTGRES_STARTED}" ]; then
-#            sleep 3
-#        fi
-#
-#        echo -e ""
-#    fi
 }
 
 if [ $# -gt 0 ]; then
@@ -281,7 +304,7 @@ if [ $# -gt 0 ]; then
         if [ -n "${TERMINATE_ASSET_CONTAINER}" ]; then
             echo -e ""
             echo -e "Stopping asset containers..."
-            docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr down
+            docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" down
             echo -e "Asset containers ${GREEN}stopped${CLR} successfully."
         fi
 
@@ -294,17 +317,17 @@ if [ $# -gt 0 ]; then
             if [ "$1" == "up" ]; then
                 shift 1
 
-                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr up -d "$@"
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" up -d "$@"
 
             # Stop the Asset Containers
             elif [ "$1" == "down" ]; then
                 shift 1
 
-                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr down "$@"
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" down "$@"
 
             # Handle Other Commands
             else
-                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr "$@"
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" "$@"
             fi
 
         else
@@ -440,16 +463,24 @@ if [ $# -gt 0 ]; then
         shift 1
         is_dockr_asset_up mysql
 
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec mysql \
+        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql \
             bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root $1"
 
-    # Initiate a Redis Session within Redis container is available.
+    # Initiate a Redis Session within Redis container.
     elif [ "$1" == "redis" ] ; then
         shift 1
         is_dockr_asset_up redis
 
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p dockr exec redis \
+        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec redis \
             redis-cli
+
+    # Initiate a Postgres Session within Postgres container with DB specified.
+    elif [ "$1" == "postgres" ] ; then
+        shift 1
+        is_dockr_asset_up postgres
+
+        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres \
+            psql -U "${DOCKR_ASSET_USERNAME}" "${1:-postgres}"
 
     # RUN other Command with docker-compose
     else
