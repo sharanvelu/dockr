@@ -246,7 +246,7 @@ check_project_database() {
             if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres psql --username=dockr -l | grep -q -w "${DB_DATABASE}"
             then
                 echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
-                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres psql -U "${DOCKR_ASSET_USERNAME}" -D "${DOCKR_ASSET_DEFAULT_DATABASE}" -c "create database ${DB_DATABASE}" >> /dev/null
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres psql -U "${DOCKR_ASSET_USERNAME}" -d "${DOCKR_ASSET_DEFAULT_DATABASE}" -c "create database ${DB_DATABASE}" >> /dev/null
                 echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} created successfully."
             else
                 echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} already exists. Skipping..."
