@@ -40,13 +40,6 @@ if [ -f "${PROJECT_ROOT_DIR}/.env" ]; then
     source "${PROJECT_ROOT_DIR}/.env"
 fi
 
-# Check for Mandatory Env variables
-if [ -z "${DOCKR_PORT}" ]; then
-    echo -e "Required Parameter ${YELLOW}\"DOCKR_PORT\"${CLR} is ${RED}missing${CLR} from ${CYAN}.env${CLR}"
-
-    exit 1
-fi
-
 # Container Name
 export DOCKR_CONTAINER_NAME=${DOCKR_CONTAINER_NAME:-"${PROJECT_NAME}-web"}
 
@@ -257,12 +250,24 @@ check_project_database() {
     fi
 }
 
+# Check Mandatory Environment variables
+check_env() {
+    # Check for Mandatory Env variables
+    if [ -z "${DOCKR_PORT}" ]; then
+        echo -e "Required Parameter ${YELLOW}\"DOCKR_PORT\"${CLR} is ${RED}missing${CLR} from ${CYAN}.env${CLR}"
+
+        exit 1
+    fi
+}
+
 if [ $# -gt 0 ]; then
     is_docker_engine_up
 
     # Handle Dockr Up Command.
     if [ "$1" == "up" ]; then
         shift 1
+
+        check_env
 
         dockr_network_check
 
