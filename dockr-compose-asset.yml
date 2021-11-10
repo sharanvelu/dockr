@@ -7,10 +7,10 @@ services:
         ports:
             - '3306:3306'
         environment:
-            MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
-            MYSQL_DATABASE: 'dockr'
-            MYSQL_USER: '${MYSQL_USERNAME}'
-            MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
+            MYSQL_ROOT_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
+            MYSQL_USER: '${DOCKR_ASSET_USERNAME:-dockr}'
+            MYSQL_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
+            MYSQL_DATABASE: '${DOCKR_ASSET_DEFAULT_DATABASE:-dockr}'
             MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
         volumes:
             - dockr_mysql:/var/lib/mysql
@@ -20,7 +20,22 @@ services:
             retries: 3
             timeout: 5s
         networks:
-            - dockr
+            - '${DOCKR_NETWORK:-dockr}'
+
+    postgres:
+        image: postgres
+        container_name: dockr_postgres
+        ports:
+            - '5432:5432'
+        environment:
+            POSTGRES_USER: '${DOCKR_ASSET_USERNAME:-dockr}'
+            POSTGRES_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
+            POSTGRES_DB: '${DOCKR_ASSET_DEFAULT_DATABASE:-dockr}'
+        volumes:
+            - dockr_postgres:/var/lib/postgresql/data
+        restart: always
+        networks:
+            - '${DOCKR_NETWORK:-dockr}'
 
     redis:
         image: 'redis:alpine'
@@ -34,7 +49,7 @@ services:
             retries: 3
             timeout: 5s
         networks:
-            - dockr
+            - '${DOCKR_NETWORK:-dockr}'
 
 networks:
     dockr:
@@ -42,6 +57,8 @@ networks:
 
 volumes:
     dockr_mysql:
+        driver: local
+    dockr_postgres:
         driver: local
     dockr_redis:
         driver: local
