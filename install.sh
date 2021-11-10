@@ -79,6 +79,23 @@ setup_dockr_files() {
     curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr-compose-asset.yml" >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_DOCKER_COMPOSE_ASSET}"
 }
 
+# Add Hosts entry For Dockr
+add_host_entry() {
+    display_process "Adding Hosts Entry for Dockr Network..."
+
+    if ! grep -q -w "dockr" /etc/hosts; then
+        echo -e "Please enter your system password (if prompted)!"
+        {
+            echo ""
+            echo "# Added by Dockr"
+            echo "127.0.0.1 dockr"
+        } | sudo tee -a /etc/hosts > /dev/null
+    else
+        sleep 1
+        echo -e "Hosts entry already exists. Skipping..."
+    fi
+}
+
 # Finish Setup by transferring Temp dir to Dockr dir.
 finalize_setup() {
     display_process "Finalizing Dockr Setup..."
@@ -112,6 +129,8 @@ system_check
 init_dockr_directory
 
 setup_dockr_files
+
+add_host_entry
 
 finalize_setup
 
