@@ -10,7 +10,7 @@ services:
             MYSQL_ROOT_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
             MYSQL_USER: '${DOCKR_ASSET_USERNAME:-dockr}'
             MYSQL_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
-            MYSQL_DATABASE: '${DOCKR_MYSQL_DEFAULT_DATABASE:-dockr}'
+            MYSQL_DATABASE: '${DOCKR_ASSET_DEFAULT_DATABASE:-dockr}'
             MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
         volumes:
             - dockr_mysql:/var/lib/mysql
@@ -30,7 +30,7 @@ services:
         environment:
             POSTGRES_USER: '${DOCKR_ASSET_USERNAME:-dockr}'
             POSTGRES_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
-            POSTGRES_DB: 'km'
+            POSTGRES_DB: '${DOCKR_ASSET_DEFAULT_DATABASE:-dockr}'
         volumes:
             - dockr_postgres:/var/lib/postgresql/data
         restart: always
