@@ -44,7 +44,6 @@ fi
 export DOCKR_CONTAINER_NAME=${DOCKR_CONTAINER_NAME:-"${PROJECT_NAME}-web"}
 
 # Define custom environment variables
-export DOCKR_PORT=${DOCKR_PORT:-80}
 export DOCKR_PHP_VERSION=${DOCKR_PHP_VERSION:-8.0}
 if [ -z "${DOCKR_DOCKER_IMAGE}" ]; then
     DOCKR_DOCKER_IMAGE="sharanvelu/laravel-php:${DOCKR_PHP_VERSION}"
@@ -262,6 +261,7 @@ check_env() {
 
         exit 1
     fi
+    export DOCKR_PORT=${DOCKR_PORT:-80}
 }
 
 if [ $# -gt 0 ]; then
