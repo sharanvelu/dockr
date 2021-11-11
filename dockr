@@ -102,10 +102,10 @@ is_dockr_asset_up() {
     # If needs to skip checking for dockr and
     if [ -z "${DO_NOT_CHECK_DOCKR}" ]; then
         # Check if Docker asset containers are up (To avoid "not found" result in CLI)
-        if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
-        then
-            dockr_asset_container_not_running "$1"
-        fi
+#        if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
+#        then
+#            dockr_asset_container_not_running "$1"
+#        fi
 
         if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep -q "$1"
         then
@@ -176,12 +176,12 @@ dockr_network_check() {
 asset_container_check() {
     if [ -z "${DOCKR_SKIP_ASSET}" ]; then
         # Check if Docker asset containers are up (To avoid "not found" result in CLI)
-        if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
-        then
-            DOCKR_ASSET_MYSQL_STARTED=1
-            DOCKR_ASSET_POSTGRES_STARTED=1
-            SHOULD_START_ASSET_CONTAINER=1
-        else
+#        if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
+#        then
+#            DOCKR_ASSET_MYSQL_STARTED=1
+#            DOCKR_ASSET_POSTGRES_STARTED=1
+#            SHOULD_START_ASSET_CONTAINER=1
+#        else
             if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep mysql | grep -q running
             then
                 DOCKR_ASSET_MYSQL_STARTED=1
@@ -198,7 +198,7 @@ asset_container_check() {
             then
                 SHOULD_START_ASSET_CONTAINER=1
             fi
-        fi
+#        fi
 
         if [ -n "${SHOULD_START_ASSET_CONTAINER}" ]; then
             echo -e "Starting asset containers..."
