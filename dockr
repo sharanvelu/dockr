@@ -174,41 +174,45 @@ dockr_network_check() {
 
 # Manage Asset Containers (Mysql, Redis, ...)
 asset_container_check() {
-    # Check if Docker asset containers are up (To avoid "not found" result in CLI)
-    if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
-    then
-        DOCKR_ASSET_MYSQL_STARTED=1
-        DOCKR_ASSET_POSTGRES_STARTED=1
-        SHOULD_START_ASSET_CONTAINER=1
-    else
-        if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep mysql | grep -q running
+    if [ -z "${DOCKR_SKIP_ASSET}" ]; then
+        # Check if Docker asset containers are up (To avoid "not found" result in CLI)
+        if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
         then
             DOCKR_ASSET_MYSQL_STARTED=1
-            SHOULD_START_ASSET_CONTAINER=1
-        fi
-
-        if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep postgres | grep -q running
-        then
             DOCKR_ASSET_POSTGRES_STARTED=1
             SHOULD_START_ASSET_CONTAINER=1
+        else
+            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep mysql | grep -q running
+            then
+                DOCKR_ASSET_MYSQL_STARTED=1
+                SHOULD_START_ASSET_CONTAINER=1
+            fi
+
+            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep postgres | grep -q running
+            then
+                DOCKR_ASSET_POSTGRES_STARTED=1
+                SHOULD_START_ASSET_CONTAINER=1
+            fi
+
+            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep redis | grep -q running
+            then
+                SHOULD_START_ASSET_CONTAINER=1
+            fi
         fi
 
-        if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep redis | grep -q running
-        then
-            SHOULD_START_ASSET_CONTAINER=1
+        if [ -n "${SHOULD_START_ASSET_CONTAINER}" ]; then
+            echo -e "Starting asset containers..."
+            docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" up -d
+            echo -e "Asset containers ${GREEN}started${CLR}."
+            echo -e ""
         fi
-    fi
-
-    if [ -n "${SHOULD_START_ASSET_CONTAINER}" ]; then
-        echo -e "Starting asset containers..."
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" up -d
-        echo -e "Asset containers ${GREEN}started${CLR}."
-        echo -e ""
     fi
 }
 
 check_project_database() {
-    if [ -z "${DOCKR_SKIP_DB_CHECK}" ]; then
+    if [ -n "${DOCKR_SKIP_ASSET}" ] || [ -n "${DOCKR_SKIP_DB_CHECK}" ]; then
+        echo '' >> /dev/null
+    else
         if [ "$DB_CONNECTION" == "mysql" ]; then
             echo -e "Checking for database ${CYAN}${DB_DATABASE}${CLR} presence in Mysql."
             if [ -n "${DOCKR_ASSET_MYSQL_STARTED}" ]; then
