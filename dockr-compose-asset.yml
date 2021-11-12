@@ -58,7 +58,10 @@ networks:
 volumes:
     dockr_mysql:
         driver: local
+        name: dockr_asset_mysql
     dockr_postgres:
         driver: local
+        name: dockr_asset_postgres
     dockr_redis:
         driver: local
+        name: dockr_asset_redis
