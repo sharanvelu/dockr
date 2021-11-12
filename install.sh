@@ -102,8 +102,10 @@ finalize_setup() {
     rm -rf "${DOCKR_DIR_HOME}"
     mv "${DOCKR_DIR_TEMP}" "${DOCKR_DIR_HOME}"
 
-    mv "${DOCKR_DIR_HOME}"/dockr /usr/local/bin/dockr
-    chmod u+x /usr/local/bin/dockr
+    rm -rf /usr/local/bin/dockr
+    ln "${DOCKR_DIR_HOME}"/dockr /usr/local/bin/dockr
+
+    chmod u+x "${DOCKR_DIR_HOME}"/dockr
 }
 
 print_dockr_success() {
