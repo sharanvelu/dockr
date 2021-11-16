@@ -419,6 +419,24 @@ if [ $# -gt 0 ]; then
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
             php artisan ${SEEDER_COMMAND}
 
+    # Run artisan make commands within the web container
+    elif [ "$1" == "make" ]; then
+        shift 1
+        is_dockr_up
+
+        # shellcheck disable=SC2086
+        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
+            php artisan make:$*
+
+    # Run artisan queue commands within the web container
+    elif [ "$1" == "queue" ]; then
+        shift 1
+        is_dockr_up
+
+        # shellcheck disable=SC2086
+        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
+            php artisan queue:$*
+
     # Run "Node" Command within web container.
     elif [ "$1" == "node" ]; then
         shift 1
