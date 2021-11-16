@@ -103,7 +103,7 @@ git_perform() {
             git reset --hard -q
             git checkout -q "${DOCKR_BRANCH}"
             display_process "Pulling latest changes from git."
-            git pull -p
+            git pull -q
             cd "${CURRENT_DIR}" || exiting "Unable to locate dir ${CURRENT_DIR}"
         fi
     fi
