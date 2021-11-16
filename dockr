@@ -282,17 +282,21 @@ if [ $# -gt 0 ]; then
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" up "$@"
 
     # Commands for Asset Containers Such as Mysql, Redis, ...
-    elif [ "$1" == "down" ]; then
+    elif [ "$1" == "down" ] || [ "$1" == "stop" ]; then
+        STOP_TYPE="$1"
         shift 1
 
         if [ "$1" == "all" ]; then
             shift 1
 
             PS_RESULTS=$(docker ps -f "network=${DOCKR_NETWORK}" -q -a)
+            # shellcheck disable=SC2086
             if [ -n "${PS_RESULTS}" ]; then
                 echo -e "${RED}Stopping${CLR} all containers."
                 docker stop ${PS_RESULTS} >> /dev/null
-                docker rm ${PS_RESULTS} >> /dev/null
+                if [ "${STOP_TYPE}" == "down" ]; then
+                    docker rm ${PS_RESULTS} >> /dev/null
+                fi
 
                 echo -e "All containers ${GREEN}stopped${CLR} successfully."
             else
@@ -308,12 +312,12 @@ if [ $# -gt 0 ]; then
             TERMINATE_ASSET_CONTAINER=1
         fi
 
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" down "$@"
+        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" "${STOP_TYPE}" "$@"
 
         if [ -n "${TERMINATE_ASSET_CONTAINER}" ]; then
             echo -e ""
             echo -e "Stopping asset containers..."
-            docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" down
+            docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" "${STOP_TYPE}"
             echo -e "Asset containers ${GREEN}stopped${CLR} successfully."
         fi
 
@@ -328,11 +332,12 @@ if [ $# -gt 0 ]; then
 
                 docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" up -d "$@"
 
-            # Stop the Asset Containers
-            elif [ "$1" == "down" ]; then
+            # Stop or Terminate the Asset Containers
+            elif [ "$1" == "stop" ] || [ "$1" == "down" ]; then
+                STOP_TYPE="$1"
                 shift 1
 
-                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" down "$@"
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" "${STOP_TYPE}" "$@"
 
             # Handle Other Commands
             else
