@@ -16,14 +16,11 @@ GREEN='\033[1;32m'
 ## Dockr Branch
 DOCKR_BRANCH="release"
 
-## DIRECTORY
-DOCKR_DIR_HOME="${HOME}/Dockr"
-DOCKR_DIR_TEMP="${HOME}/Dockr_TEMP"
+## Dockr Name
+DOCKR_NAME="Dockr"
 
-# FILES NAME
-DOCKR_FILES_DOCKR="dockr"
-DOCKR_FILES_DOCKER_COMPOSE_GLOBAL="dockr-compose.yml"
-DOCKR_FILES_DOCKER_COMPOSE_ASSET="dockr-compose-asset.yml"
+## DIRECTORY
+DOCKR_DIR_HOME="${HOME}/dockr"
 
 # Display Process
 display_process() {
@@ -37,8 +34,6 @@ exiting() {
     echo -e "${RED}${*}${CLR}"
     echo -e "Exiting the installation Process..."
 
-    rm -rf "${DOCKR_DIR_TEMP}"
-
     exit 1
 }
 
@@ -47,47 +42,27 @@ command_exists() {
     command -v "$@" >/dev/null 2>&1
 }
 
+# Verifying operating system
 system_check() {
-    # Verifying operating system
     case "$(uname -s)" in
         Linux*) ;;
         Darwin*) ;;
         *)
           echo "OS (operating system) ([$(uname -s)]) not supported." >&2
-          echo "Dockr supports macOS, Linux, and Windows (WSL2)." >&2
+          echo "${DOCKR_NAME} supports macOS, Linux, and Windows (WSL2)." >&2
           exit 1
     esac
 }
 
-# Initialize Dockr Directory
-init_dockr_directory() {
-    rm -rf "${DOCKR_DIR_TEMP}"
-    mkdir "${DOCKR_DIR_TEMP}"
-    mkdir "${DOCKR_DIR_TEMP}/res"
-    mkdir "${DOCKR_DIR_TEMP}/res/bin"
-}
-
-# Setup Dockr Binary Files
-setup_dockr_files() {
-    display_process "Adding binary files for Dockr..."
-
-    ## DOCKR
-    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr" >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_DOCKR}"
-
-    ## dockr-compose Files
-    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/res/dockr-compose.yml" >> "${DOCKR_DIR_TEMP}/res/${DOCKR_FILES_DOCKER_COMPOSE_GLOBAL}"
-    curl -fsSL "https://raw.githubusercontent.com/sharanvelu/dockr/${DOCKR_BRANCH}/dockr-compose-asset.yml" >> "${DOCKR_DIR_TEMP}/${DOCKR_FILES_DOCKER_COMPOSE_ASSET}"
-}
-
 # Add Hosts entry For Dockr
 add_host_entry() {
-    display_process "Adding Hosts Entry for Dockr Network..."
+    display_process "Adding Hosts Entry for ${DOCKR_NAME} Network..."
 
     if ! grep -q -w "dockr" /etc/hosts; then
         echo -e "Please enter your system password (if prompted)!"
         {
             echo ""
-            echo "# Added by Dockr"
+            echo "# Added by ${DOCKR_NAME}"
             echo "127.0.0.1 dockr"
         } | sudo tee -a /etc/hosts > /dev/null
     else
@@ -96,14 +71,52 @@ add_host_entry() {
     fi
 }
 
+installation_type_check() {
+    if [ -d "${DOCKR_DIR_HOME}" ]; then
+        INSTALL_TYPE="update"
+    fi
+}
+
+git_perform() {
+    command_exists git || {
+        exiting "Git isn't available or not installed correctly."
+    }
+
+    # Install Dockr
+    if [ "$1" == "install" ]; then
+        git clone --single-branch --branch "${DOCKR_BRANCH}" --no-tags https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
+
+    # Update Dockr
+    elif [ "$1" == "update" ]; then
+        # If existing dockr is not a git repository, remove the existing dir and add it as git repo.
+        if [ ! -d "${DOCKR_DIR_HOME}/.git" ]; then
+            display_process "Updating ${DOCKR_NAME} with latest git branch."
+            rm -rf "${DOCKR_DIR_HOME}"
+            git_perform "install"
+
+        # Dockr is already a git repo. Pull the latest version.
+        else
+            echo "${DOCKR_NAME} already exists. Trying to update ${DOCKR_NAME} using git..."
+            CURRENT_DIR="$(pwd)"
+            cd "${DOCKR_DIR_HOME}" || exiting "Unable to locate dir ${DOCKR_DIR_HOME}"
+            git reset --hard -q
+            git checkout -q "${DOCKR_BRANCH}"
+            git pull
+            cd "${CURRENT_DIR}" || exiting "Unable to locate dir ${CURRENT_DIR}"
+        fi
+    fi
+}
+
 # Finish Setup by transferring Temp dir to Dockr dir.
 finalize_setup() {
     display_process "Finalizing Dockr Setup..."
-    rm -rf "${DOCKR_DIR_HOME}"
-    mv "${DOCKR_DIR_TEMP}" "${DOCKR_DIR_HOME}"
 
-    mv "${DOCKR_DIR_HOME}"/dockr /usr/local/bin/dockr
-    chmod u+x /usr/local/bin/dockr
+    # Give Permission for dockr executables
+    chmod u+x "${DOCKR_DIR_HOME}/dockr"
+
+    # Update dockr executable by creating a symlink
+    rm -rf /usr/local/bin/dockr
+    ln -s "${DOCKR_DIR_HOME}/dockr" /usr/local/bin/dockr
 }
 
 print_dockr_success() {
@@ -114,24 +127,39 @@ print_dockr_success() {
     printf '  /  /   /  / /   / / /   /   -,^   /  /_/ /    \n'
     printf ' /  /___/  / /___/ / /___/  /\  \  /  /\  \     \n'
     printf '/_________/_______/_____/__/  \__\/__/  \__\    \n'
+
+#    printf '     ______                            ________ \n'
+#    printf '    /  ___  \ _______ ____   __  __   /  ___  / \n'
+#    printf '   /  /   | |/  ___  / __/ /  //  /  /  /  / /  \n'
+#    printf '  /  /   /  / /   / / /   /   --"   /  /__/_/   \n'
+#    printf ' /  /___/  / /___/ / /__ /  /\  \  /  /\  \     \n'
+#    printf '/_________/_______/____//__/  \__\/__/  \__\    \n'
+
     echo -e "${CLR}"
     printf '       ___  .  . .    ___  .     .    .         \n'
     printf '      /__  /--/ /_\  /__/ /_\   / \  /          \n'
     printf 'BY   ___/ /  / /   \/ |  /   \ /   \/           \n'
 
-    display_process "...is now ${GREEN}successfully${CLR} installed!"
+    if [ "$1" == "install" ]; then
+        display_process "...is now ${GREEN}successfully${CLR} installed!"
+    fi
+
+    if [ "$1" == "update" ]; then
+        display_process "...is ${GREEN}successfully${CLR} updated!"
+    fi
 }
 
 echo -e "Beginning Installation..."
 
 system_check
 
-init_dockr_directory
+INSTALL_TYPE="install"
+installation_type_check
 
-setup_dockr_files
+git_perform ${INSTALL_TYPE}
 
 add_host_entry
 
 finalize_setup
 
-print_dockr_success
+print_dockr_success "$INSTALL_TYPE"
