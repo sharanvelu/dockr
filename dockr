@@ -10,7 +10,7 @@ WHITE='\033[1;37m'
 CYAN='\033[1;36m'
 
 # Dockr Dir
-DOCKR_HOME_DIR="$HOME/Dockr"
+DOCKR_HOME_DIR="$HOME/dockr"
 DOCKR_COMPOSE_ASSET="${DOCKR_HOME_DIR}/dockr-compose-asset.yml"
 DOCKR_COMPOSE="${DOCKR_HOME_DIR}/res/dockr-compose.yml"
 
@@ -239,7 +239,7 @@ check_project_database() {
             fi
 
             # Create DB with specified name is not present.
-            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres psql --username=dockr -l | grep -q -w "${DB_DATABASE}"
+            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres psql -U "${DOCKR_ASSET_USERNAME}" -l | grep -q -w "${DB_DATABASE}"
             then
                 echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
                 docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres psql -U "${DOCKR_ASSET_USERNAME}" -d "${DOCKR_ASSET_DEFAULT_DATABASE}" -c "create database ${DB_DATABASE}" >> /dev/null
