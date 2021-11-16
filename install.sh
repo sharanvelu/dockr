@@ -91,7 +91,6 @@ git_perform() {
     elif [ "$1" == "update" ]; then
         # If existing dockr is not a git repository, remove the existing dir and add it as git repo.
         if [ ! -d "${DOCKR_DIR_HOME}/.git" ]; then
-            display_process "Updating ${DOCKR_NAME} with latest git branch."
             rm -rf "${DOCKR_DIR_HOME}"
             git_perform "install"
 
