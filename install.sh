@@ -84,7 +84,8 @@ git_perform() {
 
     # Install Dockr
     if [ "$1" == "install" ]; then
-        git clone --single-branch --branch "${DOCKR_BRANCH}" --no-tags https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
+        display_process "Getting ${DOCKR_NAME} from git."
+        git clone --single-branch --branch "${DOCKR_BRANCH}" --no-tags -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
 
     # Update Dockr
     elif [ "$1" == "update" ]; then
@@ -101,7 +102,8 @@ git_perform() {
             cd "${DOCKR_DIR_HOME}" || exiting "Unable to locate dir ${DOCKR_DIR_HOME}"
             git reset --hard -q
             git checkout -q "${DOCKR_BRANCH}"
-            git pull
+            display_process "Pulling latest changes from git."
+            git pull -p
             cd "${CURRENT_DIR}" || exiting "Unable to locate dir ${CURRENT_DIR}"
         fi
     fi
