@@ -1,3 +1,7 @@
+#!/bin/bash
+
+## Dockr by Sharan
+
 print_list_item() {
     COMMAND=$1
     shift 1
