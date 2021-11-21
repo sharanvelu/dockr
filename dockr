@@ -22,7 +22,7 @@ font_styling_vars() {
 font_styling_vars
 
 # Dockr Dir
-DOCKR_HOME_DIR="$HOME/dockr"
+DOCKR_HOME_DIR="/usr/local/lib/dockr"
 
 # Dockr Binary Dir
 DOCKR_BIN_DIR="${DOCKR_HOME_DIR}/res/bin"
