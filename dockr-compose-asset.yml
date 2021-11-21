@@ -1,17 +1,17 @@
-version: '3.5'
+version: "3.5"
 
 services:
     mysql:
         image: ubuntu/mysql
         container_name: dockr_mysql
         ports:
-            - '3306:3306'
+            - "3306:3306"
         environment:
-            MYSQL_ROOT_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
-            MYSQL_USER: '${DOCKR_ASSET_USERNAME:-dockr}'
-            MYSQL_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
-            MYSQL_DATABASE: '${DOCKR_ASSET_DEFAULT_DATABASE:-dockr}'
-            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+            MYSQL_ROOT_PASSWORD: "${DOCKR_ASSET_PASSWORD:-password}"
+            MYSQL_USER: "${DOCKR_ASSET_USERNAME:-dockr}"
+            MYSQL_PASSWORD: "${DOCKR_ASSET_PASSWORD:-password}"
+            MYSQL_DATABASE: "${DOCKR_ASSET_DEFAULT_DATABASE:-dockr}"
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
         volumes:
             - dockr_mysql:/var/lib/mysql
         command: ["--default-authentication-plugin=mysql_native_password"]
@@ -20,28 +20,28 @@ services:
             retries: 3
             timeout: 5s
         networks:
-            - '${DOCKR_NETWORK:-dockr}'
+            - "${DOCKR_NETWORK:-dockr}"
 
     postgres:
         image: postgres
         container_name: dockr_postgres
         ports:
-            - '5432:5432'
+            - "5432:5432"
         environment:
-            POSTGRES_USER: '${DOCKR_ASSET_USERNAME:-dockr}'
-            POSTGRES_PASSWORD: '${DOCKR_ASSET_PASSWORD:-password}'
-            POSTGRES_DB: '${DOCKR_ASSET_DEFAULT_DATABASE:-dockr}'
+            POSTGRES_USER: "${DOCKR_ASSET_USERNAME:-dockr}"
+            POSTGRES_PASSWORD: "${DOCKR_ASSET_PASSWORD:-password}"
+            POSTGRES_DB: "${DOCKR_ASSET_DEFAULT_DATABASE:-dockr}"
         volumes:
             - dockr_postgres:/var/lib/postgresql/data
         restart: always
         networks:
-            - '${DOCKR_NETWORK:-dockr}'
+            - "${DOCKR_NETWORK:-dockr}"
 
     redis:
-        image: 'redis:alpine'
+        image: "redis:alpine"
         container_name: dockr_redis
         ports:
-            - '${FORWARD_REDIS_PORT:-6379}:6379'
+            - "6379:6379"
         volumes:
             - dockr_redis:/data
         healthcheck:
@@ -49,7 +49,7 @@ services:
             retries: 3
             timeout: 5s
         networks:
-            - '${DOCKR_NETWORK:-dockr}'
+            - "${DOCKR_NETWORK:-dockr}"
 
 networks:
     dockr:

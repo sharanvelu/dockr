@@ -20,9 +20,9 @@ elif [ "$1" == "prune" ]; then
         # shellcheck disable=SC2046
         docker image rm $(${DOCKR_IMAGE_LIST_COMMAND} -q) >> /dev/null
 
-        echo -e "${DOCKR_NAME:-Dockr} images are ${GREEN}pruned successfully${CLR}."
+        echo -e "All ${DOCKR_NAME} images are ${GREEN}pruned successfully${CLR}."
     else
-        echo -e "${RED}No${CLR} ${DOCKR_NAME:-Dockr} images to prune."
+        echo -e "${RED}No${CLR} ${DOCKR_NAME} images to prune."
     fi
 
 

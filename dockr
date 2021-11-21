@@ -3,22 +3,36 @@
 ## Dockr by Sharan
 
 # Dockr Name
-DOCKR_NAME="Dockr"
+DOCKR_NAME="DockR"
 
-# Font Styling
-CLR='\033[0m'
-RED='\033[1;31m'
-GREEN='\033[1;32m'
-YELLOW='\033[1;33m'
-WHITE='\033[1;37m'
-CYAN='\033[1;36m'
-BOLD='\033[1m'
-UNDERLINE='\033[4m'
-ITALIC='\033[3m'
+# shellcheck disable=SC2034
+font_styling_vars() {
+    # Font Styling
+    CLR='\033[0m'
+    RED='\033[1;31m'
+    GREEN='\033[1;32m'
+    YELLOW='\033[1;33m'
+    WHITE='\033[1;37m'
+    CYAN='\033[1;36m'
+    BOLD='\033[1m'
+    UNDERLINE='\033[4m'
+    ITALIC='\033[3m'
+}
+
+font_styling_vars
 
 # Dockr Dir
 DOCKR_HOME_DIR="$HOME/dockr"
+
+# If the machine was development machine (Sharan's Machine). Change the home dir to development dir
+if [ "${DOCKR_MACHINE_NAME}" == "$(uname -n)" ]; then
+    DOCKR_HOME_DIR="${HOME}/Documents/Projects/Dockr/dockr"
+fi
+
+# Dockr Binary Dir
 DOCKR_BIN_DIR="${DOCKR_HOME_DIR}/res/bin"
+
+# Dockr Compose Files
 DOCKR_COMPOSE_ASSET="${DOCKR_HOME_DIR}/dockr-compose-asset.yml"
 DOCKR_COMPOSE="${DOCKR_HOME_DIR}/res/dockr-compose.yml"
 
@@ -180,6 +194,7 @@ if [ $# -gt 0 ]; then
 
     # Commands for Dockr Down
     elif [ "$1" == "down" ] || [ "$1" == "stop" ]; then
+        # shellcheck disable=SC2034
         STOP_TYPE="$1"
         shift 1
 
@@ -367,6 +382,7 @@ if [ $# -gt 0 ]; then
     else
         HELP_COMMAND="$1"
         if [ "${HELP_COMMAND}" == "help" ]; then
+            # shellcheck disable=SC2034
             HELP_TYPE="help"
         fi
 
