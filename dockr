@@ -24,11 +24,6 @@ font_styling_vars
 # Dockr Dir
 DOCKR_HOME_DIR="$HOME/dockr"
 
-# If the machine was development machine (Sharan's Machine). Change the home dir to development dir
-if [ "${DOCKR_MACHINE_NAME}" == "$(uname -n)" ]; then
-    DOCKR_HOME_DIR="${HOME}/Documents/Projects/Dockr/dockr"
-fi
-
 # Dockr Binary Dir
 DOCKR_BIN_DIR="${DOCKR_HOME_DIR}/res/bin"
 
