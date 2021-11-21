@@ -1,3 +1,7 @@
+#!/bin/bash
+
+## Dockr by Sharan
+
 # shellcheck disable=SC2089
 DOCKR_IMAGE_LIST_COMMAND="docker image ls \
         -f reference=sharanvelu/laravel-php \
