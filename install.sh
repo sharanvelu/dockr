@@ -14,13 +14,13 @@ RED='\033[1;31m'
 GREEN='\033[1;32m'
 
 ## Dockr Branch
-DOCKR_BRANCH="release"
+DOCKR_BRANCH="change-default-install-dir"
 
 ## Dockr Name
 DOCKR_NAME="Dockr"
 
 ## DIRECTORY
-DOCKR_DIR_HOME="${HOME}/dockr"
+DOCKR_DIR_HOME="/usr/local/lib/dockr"
 
 # Display Process
 display_process() {
@@ -118,6 +118,10 @@ finalize_setup() {
     # Update dockr executable by creating a symlink
     rm -rf /usr/local/bin/dockr
     ln -s "${DOCKR_DIR_HOME}/dockr" /usr/local/bin/dockr
+
+    if [ -d "${HOME}/dockr" ]; then
+        rm -rf "${HOME}/dockr"
+    fi
 }
 
 print_dockr_success() {
