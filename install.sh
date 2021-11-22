@@ -12,9 +12,10 @@
 CLR='\033[0m'
 RED='\033[1;31m'
 GREEN='\033[1;32m'
+BOLD='\033[1m'
 
 ## Dockr Branch
-DOCKR_BRANCH="change-default-install-dir"
+DOCKR_BRANCH="release"
 
 ## Dockr Name
 DOCKR_NAME="Dockr"
@@ -134,9 +135,10 @@ print_dockr_success() {
     printf '/________/______/____//__/  \__\/__/  \_\    \n'
 
     echo -e "${CLR}"
-    printf '       ___  .  . .    ___  .     .    .         \n'
-    printf '      /__  /--/ /_\  /__/ /_\   / \  /          \n'
-    printf 'BY   ___/ /  / /   \/ |  /   \ /   \/           \n'
+#    printf '       ___  .  . .    ___  .     .    .         \n'
+#    printf '      /__  /--/ /_\  /__/ /_\   / \  /          \n'
+#    printf 'BY   ___/ /  / /   \/ |  /   \ /   \/           \n'
+    echo -e "                               By ${BOLD}- SHARAN -${CLR}"
 
     if [ "$1" == "install" ]; then
         display_process "...is now ${GREEN}successfully${CLR} installed!"
