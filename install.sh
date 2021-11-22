@@ -18,7 +18,7 @@ BOLD='\033[1m'
 DOCKR_BRANCH="release"
 
 ## Dockr Name
-DOCKR_NAME="Dockr"
+DOCKR_NAME="DockR"
 
 ## DIRECTORY
 DOCKR_DIR_HOME="/usr/local/lib/dockr"
