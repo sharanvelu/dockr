@@ -119,10 +119,6 @@ finalize_setup() {
     # Update dockr executable by creating a symlink
     rm -rf /usr/local/bin/dockr
     ln -s "${DOCKR_DIR_HOME}/dockr" /usr/local/bin/dockr
-
-    if [ -d "${HOME}/dockr" ]; then
-        rm -rf "${HOME}/dockr"
-    fi
 }
 
 print_dockr_success() {
