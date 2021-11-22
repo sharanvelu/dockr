@@ -21,7 +21,7 @@ DOCKR_BRANCH="release"
 DOCKR_NAME="DockR"
 
 ## DIRECTORY
-DOCKR_DIR_HOME="/usr/local/lib/dockr"
+DOCKR_DIR_HOME="${HOME}/dockr"
 
 # Display Process
 display_process() {
