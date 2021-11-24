@@ -3,7 +3,6 @@
 ## Dockr by Sharan
 
 ## Exit when an error occurs instead of continuing the rest.
-set -e
 
 # Dockr Name
 DOCKR_NAME="DockR"
