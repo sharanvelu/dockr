@@ -119,4 +119,4 @@ if [ -n "${DOCKR_WORKER}" ]; then
     WORKER_SERVICE="worker"
 fi
 
-docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" up web ${WORKER_SERVICE} "$@"
+docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" up -d web ${WORKER_SERVICE}
