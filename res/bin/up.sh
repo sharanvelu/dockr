@@ -2,16 +2,6 @@
 
 ## Dockr by Sharan
 
-## Variables
-export DOCKR_CONTAINER_NAME=${DOCKR_CONTAINER_NAME:-"${PROJECT_NAME}"}
-
-# Define custom environment variables
-export DOCKR_PHP_VERSION=${DOCKR_PHP_VERSION:-8.0}
-if [ -z "${DOCKR_DOCKER_IMAGE}" ]; then
-    DOCKR_DOCKER_IMAGE="sharanvelu/laravel-php:${DOCKR_PHP_VERSION}"
-fi
-export DOCKR_DOCKER_IMAGE
-
 # Check Mandatory Environment variables
 check_env() {
     # Check for Mandatory Env variables
