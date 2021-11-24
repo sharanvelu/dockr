@@ -9,6 +9,9 @@
 # or via fetch:
 #   bash -c "$(fetch -o - https://raw.githubusercontent.com/sharanvelu/dockr/release/install.sh)"
 
+## Exit when an error occurs instead of continuing the rest.
+set -e
+
 CLR='\033[0m'
 RED='\033[1;31m'
 GREEN='\033[1;32m'
