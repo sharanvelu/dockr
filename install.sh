@@ -25,6 +25,7 @@ DOCKR_NAME="DockR"
 
 ## DIRECTORY
 DOCKR_DIR_HOME="${HOME}/dockr"
+DOCKR_DIR_BIN="/usr/local/bin"
 
 # Display Process
 display_process() {
@@ -116,12 +117,83 @@ git_perform() {
 finalize_setup() {
     display_process "Finalizing Dockr Setup..."
 
+    # Update dockr executable by creating a symlink
+    rm -rf "${DOCKR_DIR_BIN}/dockr"
+
+    if [ ! -d /usr/local ]; then
+        sudo mkdir /usr/local
+    fi
+
+    if [ ! -d "${DOCKR_DIR_BIN}" ]; then
+        sudo mkdir "${DOCKR_DIR_BIN}"
+    fi
+
+    sudo ln -s "${DOCKR_DIR_HOME}/dockr" "${DOCKR_DIR_BIN}/dockr"
+}
+
+# Add necessary permissions for necessary files / directories.
+add_permissions() {
     # Give Permission for dockr executables
     chmod u+x "${DOCKR_DIR_HOME}/dockr"
 
-    # Update dockr executable by creating a symlink
-    rm -rf /usr/local/bin/dockr
-    ln -s "${DOCKR_DIR_HOME}/dockr" /usr/local/bin/dockr
+    # Give permission to /usr/local/bin directory to the current user
+    sudo chown -R `whoami` "${DOCKR_DIR_BIN}"
+}
+
+# Do specific actions related to the OS
+os_specific_actions() {
+    # Execute some commands if the system is Linux using WSL kernel
+    if is_wsl
+    then
+        wsl_specific_command
+    fi
+
+    # Execute some commands if the system is mac
+    if is_mac
+    then
+        # Execute specific commands if the system is M1 based Mac
+        if is_mac_m1
+        then
+            mac_specific_command
+        fi
+    fi
+}
+
+# check if the machine is Linux using WSL
+is_wsl() {
+	case "$(uname -r)" in
+	    *microsoft* ) true ;; # WSL 2
+        *Microsoft* ) true ;; # WSL 1
+        * ) false;;
+	esac
+}
+
+# check if the machine is MacOS
+is_mac() {
+	case "$(uname -s)" in
+        *darwin* ) true ;;
+        *Darwin* ) true ;;
+        * ) false;;
+	esac
+}
+
+# check if the machine is M1 based Mac
+is_mac_m1() {
+	case "$(uname -m)" in
+        *arm64* ) true ;;
+        *arm* ) true ;;
+        * ) false;;
+	esac
+}
+
+# Execute Windows specific commands if any
+wsl_specific_command() {
+    true
+}
+
+# Execute Mac Os specific commands if any
+mac_specific_command() {
+    true
 }
 
 print_dockr_success() {
@@ -160,5 +232,9 @@ git_perform ${INSTALL_TYPE}
 add_host_entry
 
 finalize_setup
+
+add_permissions
+
+os_specific_actions
 
 print_dockr_success "$INSTALL_TYPE"
