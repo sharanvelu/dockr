@@ -209,7 +209,7 @@ print_dockr_success() {
 #    printf '       ___  .  . .    ___  .     .    .         \n'
 #    printf '      /__  /--/ /_\  /__/ /_\   / \  /          \n'
 #    printf 'BY   ___/ /  / /   \/ |  /   \ /   \/           \n'
-    echo -e "                               By ${BOLD}- SHARAN -${CLR}"
+    echo -e "                           By --${BOLD} SHARAN ${CLR}--"
 
     if [ "$1" == "install" ]; then
         display_process "...is now ${GREEN}successfully${CLR} installed!"
