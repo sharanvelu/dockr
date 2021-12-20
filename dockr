@@ -25,7 +25,6 @@ font_styling_vars
 
 # Dockr Dir
 DOCKR_HOME_DIR="${HOME}/dockr"
-DOCKR_HOME_DIR="${HOME}/Documents/Projects/dockr/dockr"
 
 # Dockr Data Dir
 DOCKR_DIR_DATA="${HOME}/.dockr"
