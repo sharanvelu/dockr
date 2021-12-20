@@ -4,9 +4,6 @@
 
 ## Exit when an error occurs instead of continuing the rest.
 
-# Dockr Name
-DOCKR_NAME="DockR"
-
 # shellcheck disable=SC2034
 font_styling_vars() {
     # Font Styling
@@ -23,11 +20,34 @@ font_styling_vars() {
 
 font_styling_vars
 
+# Project Root Dir
+PROJECT_ROOT_DIR="$(pwd)"
+
+# Source the ".env" file so Laravel's environment variables are available
+if [ -f "${PROJECT_ROOT_DIR}/.env" ]; then
+    source "${PROJECT_ROOT_DIR}/.env"
+fi
+
+# Dockr Name
+DOCKR_NAME="DockR"
+
+# Specify the Dockr Version
+DOCKR_VERSION="1.1"
+
+# PROJECT ROOT DIR
+PROJECT_ROOT_DIR="$(pwd)"
+export PROJECT_ROOT_DIR
+
 # Dockr Dir
 DOCKR_HOME_DIR="${HOME}/dockr"
 
+# Dockr Data Dir
+DOCKR_DIR_DATA="${HOME}/.dockr"
+DOCKR_FILE_CONFIG="${DOCKR_DIR_DATA}/config"
+
 # Dockr Binary Dir
 DOCKR_BIN_DIR="${DOCKR_HOME_DIR}/res/bin"
+DOCKR_COMMON_BIN_DIR="${DOCKR_BIN_DIR}/common"
 
 # Dockr Compose Files
 DOCKR_COMPOSE_ASSET="${DOCKR_HOME_DIR}/dockr-compose-asset.yml"
@@ -35,10 +55,6 @@ DOCKR_COMPOSE="${DOCKR_HOME_DIR}/res/dockr-compose.yml"
 
 # Dockr Network
 export DOCKR_NETWORK="dockr"
-
-# Project Root Dir
-PROJECT_ROOT_DIR="$(pwd)"
-export PROJECT_ROOT_DIR
 
 # Project Name
 PROJECT_NAME=$(basename "${PROJECT_ROOT_DIR}")
@@ -54,11 +70,6 @@ export DOCKR_ASSET_USERNAME="dockr"
 export DOCKR_ASSET_PASSWORD="password"
 export DOCKR_ASSET_DEFAULT_DATABASE="dockr"
 
-# Source the ".env" file so Laravel's environment variables are available
-if [ -f "${PROJECT_ROOT_DIR}/.env" ]; then
-    source "${PROJECT_ROOT_DIR}/.env"
-fi
-
 ## Docker Container Name - Custom Name
 export DOCKR_CONTAINER_NAME=${DOCKR_CONTAINER_NAME:-"${PROJECT_NAME}"}
 
@@ -68,6 +79,9 @@ if [ -z "${DOCKR_DOCKER_IMAGE}" ]; then
     DOCKR_DOCKER_IMAGE="sharanvelu/laravel-php:${DOCKR_PHP_VERSION}"
 fi
 export DOCKR_DOCKER_IMAGE
+
+# Composer Versions
+export DOCKR_COMPOSER_VERSION="${DOCKR_COMPOSER_VERSION:-2}"
 
 # Docker Compose file.
 DOCKER_COMPOSE_FILE="${DOCKR_COMPOSE}"
@@ -182,76 +196,61 @@ dockr_asset_container_is_stopped() {
 
 # Display Help command
 display_help() {
-    HELP_COMMAND="$1"
-    if [ "${HELP_COMMAND}" == "help" ]; then
-        HELP_TYPE="help"
-    fi
-
     . "${DOCKR_BIN_DIR}/help.sh"
 }
 
 if [ $# -gt 0 ]; then
     is_docker_engine_up
 
-    # Handle Dockr Up Command.
-    if [ "$1" == "up" ]; then
-        shift 1
-
-        . "${DOCKR_BIN_DIR}/up.sh"
-
-    # Commands for Dockr Down
-    elif [ "$1" == "down" ] || [ "$1" == "stop" ]; then
-        # shellcheck disable=SC2034
-        STOP_TYPE="$1"
-        shift 1
-
-        . "${DOCKR_BIN_DIR}/down.sh"
-
-    # Commands for Asset Containers Such as Mysql, Redis, ...
-    elif [ "$1" == "asset" ]; then
-        shift 1
-
-        . "${DOCKR_BIN_DIR}/asset.sh"
+    # Dynamic command execution using separate files.
+    if [ -f "${DOCKR_BIN_DIR}/$1.sh" ]; then
+        # shellcheck source=path_to_respective_file
+        . "${DOCKR_BIN_DIR}/$1.sh"
 
     # Run "PHP" Command within web container.
     elif [ "$1" == "php" ]; then
         shift 1
         is_dockr_up
 
+        # shellcheck disable=SC2068
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php "$@"
+            php $@
 
     # Run "Composer" Command within web container.
     elif [ "$1" == "composer" ]; then
         shift 1
         is_dockr_up
 
+        # shellcheck disable=SC2068
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            composer "$@"
+            composer $@
 
     # Run "./vendor/bin" (Binary) Command within web container.
     elif [ "$1" == "bin" ]; then
         shift 1
         is_dockr_up
 
+        # shellcheck disable=SC2086
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            ./vendor/bin/"$*"
+            vendor/bin/$*
 
     # Run" PHP Artisan" Command within web container.
     elif [ "$1" == "artisan" ] || [ "$1" == "art" ]; then
         shift 1
         is_dockr_up
 
+        # shellcheck disable=SC2068
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php artisan "$@"
+            php artisan $@
 
     # Run "PHP Artisan Test" Command within web container.
     elif [ "$1" == "test" ]; then
         shift 1
         is_dockr_up
 
+        # shellcheck disable=SC2068
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php artisan test "$@"
+            php artisan test $@
 
     # Initiate a "laravel Tinker" within web container.
     elif [ "$1" == "tinker" ] ; then
@@ -379,23 +378,22 @@ if [ $# -gt 0 ]; then
         docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres \
             psql -U "${DOCKR_ASSET_USERNAME}" "${1:-postgres}"
 
-    # Command specific to image actions.
-    elif [ "$1" == "image" ] ; then
+    # Display the Current Project's PORT number.
+    elif [ "$1" == "port" ] ; then
         shift 1
 
-        . "${DOCKR_BIN_DIR}/image.sh"
+        echo "${DOCKR_PORT:--}"
 
-    # RUN other Command with docker-compose
+    # Display the DockR Version.
+    elif [ "$1" == "--version" ] || [ "$1" == "-version" ] || [ "$1" == "-v" ] || [ "$1" == "--v" ] ; then
+        shift 1
+
+        echo "DockR - A Local development environment for Laravel using Docker"
+        echo "Version : ${DOCKR_VERSION:---}"
+
+    # Display Help For unknown commands.
     else
-        HELP_COMMAND="$1"
-        if [ "${HELP_COMMAND}" == "help" ]; then
-            # shellcheck disable=SC2034
-            HELP_TYPE="help"
-        fi
-
-        shift 1
-
-        . "${DOCKR_BIN_DIR}/help.sh"
+        display_help "$1"
     fi
 
 # Execute PS Command if just "dockr" is run.

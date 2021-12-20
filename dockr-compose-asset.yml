@@ -21,6 +21,9 @@ services:
             timeout: 5s
         networks:
             - "${DOCKR_NETWORK:-dockr}"
+        labels:
+            - "TYPE=asset"
+            - "SERVICE=mysql"
 
     postgres:
         image: postgres
@@ -36,6 +39,9 @@ services:
         restart: always
         networks:
             - "${DOCKR_NETWORK:-dockr}"
+        labels:
+            - "TYPE=asset"
+            - "SERVICE=postgres"
 
     redis:
         image: "redis:alpine"
@@ -50,6 +56,9 @@ services:
             timeout: 5s
         networks:
             - "${DOCKR_NETWORK:-dockr}"
+        labels:
+            - "TYPE=asset"
+            - "SERVICE=redis"
 
 networks:
     dockr:

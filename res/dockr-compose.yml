@@ -9,6 +9,12 @@ services:
             - "${PROJECT_ROOT_DIR}/:/var/www/html"
         networks:
             - "${DOCKR_NETWORK:-dockr}"
+        environment:
+            DOCKR_COMPOSER_VERSION: "${DOCKR_COMPOSER_VERSION}"
+        labels:
+            - "TYPE=project"
+            - "SERVICE=web"
+
     worker:
         image: "${DOCKR_DOCKER_IMAGE}"
         container_name: "${DOCKR_CONTAINER_NAME}-worker"
@@ -18,6 +24,10 @@ services:
             - "${DOCKR_NETWORK:-dockr}"
         environment:
             DOCKR_CONTAINER_TYPE: "worker"
+            DOCKR_COMPOSER_VERSION: "${DOCKR_COMPOSER_VERSION}"
+        labels:
+            - "TYPE=project"
+            - "SERVICE=worker"
 
 networks:
     dockr:

@@ -48,7 +48,7 @@ print_all() {
     if [ "${HELP_TYPE-:null}" == "help" ]; then
         printf "\n%s\n\n" "A Local development environment for Laravel using Docker"
     else
-        echo -e "\n${DOCKR_NAME} : Command '${BOLD}${HELP_COMMAND}${CLR}' is not available\n"
+        echo -e "\n${DOCKR_NAME} : Command '${BOLD}$1${CLR}' is not available\n"
     fi
 
     echo "--- ${DOCKR_NAME} Help ---"
@@ -79,9 +79,14 @@ print_all() {
     print_list_item redis Start redis session within the redis asset container
     print_list_item postgres Start postgres session within the postgres asset container
     print_list_item image "Manage images from ${DOCKR_NAME} repository"
+    print_list_item status "Display the status of the asset container and the project containers"
 
     echo -e "\nRun '${BOLD}dockr help [COMMAND]${CLR}' for additional information on a command"
 }
+
+if [ "$1" == "help" ]; then
+    shift 1
+fi
 
 if [ $# -gt 0 ]; then
     # Up
@@ -192,12 +197,24 @@ if [ $# -gt 0 ]; then
 
         print_note "All default make commands will work this way."
 
+    # Image
+    elif [ "$1" == "image" ]; then
+        print_usage "dockr image [option]"
+        echo -e "Manage images from ${DOCKR_NAME}\n"
+        echo "Options : "
+        print_options "" "ls" "Display the list of downloaded ${DOCKR_NAME} images"
+        print_options "" "prune" "Destroys every downloaded ${DOCKR_NAME} images"
+
+    # Status
+    elif [ "$1" == "status" ]; then
+        print_usage "dockr status"
+        echo -e "Prints the status of the Asset Containers and the project containers"
+
     else
-        HELP_COMMAND="$1"
-        HELP_TYPE="null"
-        print_all
+        print_all $1
     fi
 else
+    HELP_TYPE="help"
     print_all
 fi
 

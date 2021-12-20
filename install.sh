@@ -3,11 +3,11 @@
 ## Dockr by Sharan
 
 # This script should be run via curl:
-#   bash -c "$(curl -fsSL https://raw.githubusercontent.com/sharanvelu/dockr/release/install.sh)"
+#   bash -c "$(curl -fsSL install.dockr.in)"
 # or via wget:
-#   bash -c "$(wget -qO- https://raw.githubusercontent.com/sharanvelu/dockr/release/install.sh)"
+#   bash -c "$(wget -qO- install.dockr.in)"
 # or via fetch:
-#   bash -c "$(fetch -o - https://raw.githubusercontent.com/sharanvelu/dockr/release/install.sh)"
+#   bash -c "$(fetch -o - install.dockr.in)"
 
 ## Exit when an error occurs instead of continuing the rest.
 set -e
@@ -26,6 +26,10 @@ DOCKR_NAME="DockR"
 ## DIRECTORY
 DOCKR_DIR_HOME="${HOME}/dockr"
 DOCKR_DIR_BIN="/usr/local/bin"
+DOCKR_DIR_DATA="${HOME}/.dockr"
+
+## Config File
+DOCKR_FILE_CONFIG="${DOCKR_DIR_DATA}/config"
 
 # Display Process
 display_process() {
@@ -117,7 +121,7 @@ git_perform() {
 finalize_setup() {
     display_process "Finalizing Dockr Setup..."
 
-    # Update dockr executable by creating a symlink
+    # Remove the dockr bin file
     rm -rf "${DOCKR_DIR_BIN}/dockr"
 
     if [ ! -d /usr/local ]; then
@@ -128,7 +132,18 @@ finalize_setup() {
         sudo mkdir "${DOCKR_DIR_BIN}"
     fi
 
+    # Update dockr executable by creating a symlink
     sudo ln -s "${DOCKR_DIR_HOME}/dockr" "${DOCKR_DIR_BIN}/dockr"
+
+    # Setup .dockr data folder
+    if [ ! -d "${DOCKR_DIR_DATA}" ]; then
+        mkdir "${DOCKR_DIR_DATA}"
+    fi
+
+    # Setup asset config File
+    if [ ! -f "${DOCKR_FILE_CONFIG}" ]; then
+        touch "${DOCKR_FILE_CONFIG}"
+    fi
 }
 
 # Add necessary permissions for necessary files / directories.
@@ -209,7 +224,7 @@ print_dockr_success() {
 #    printf '       ___  .  . .    ___  .     .    .         \n'
 #    printf '      /__  /--/ /_\  /__/ /_\   / \  /          \n'
 #    printf 'BY   ___/ /  / /   \/ |  /   \ /   \/           \n'
-    echo -e "                               By ${BOLD}- SHARAN -${CLR}"
+    echo -e "                           By --${BOLD} SHARAN ${CLR}--"
 
     if [ "$1" == "install" ]; then
         display_process "...is now ${GREEN}successfully${CLR} installed!"
@@ -235,6 +250,6 @@ finalize_setup
 
 add_permissions
 
-os_specific_actions
+#os_specific_actions
 
 print_dockr_success "$INSTALL_TYPE"
