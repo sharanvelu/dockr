@@ -25,6 +25,7 @@ font_styling_vars
 
 # Dockr Dir
 DOCKR_HOME_DIR="${HOME}/dockr"
+DOCKR_HOME_DIR="${HOME}/Documents/Projects/dockr/dockr"
 
 # Dockr Data Dir
 DOCKR_DIR_DATA="${HOME}/.dockr"
@@ -196,6 +197,7 @@ display_help() {
 if [ $# -gt 0 ]; then
     is_docker_engine_up
 
+    # Dynamic command execution using separate files.
     if [ -f "${DOCKR_BIN_DIR}/$1.sh" ]; then
         # shellcheck source=path_to_respective_file
         . "${DOCKR_BIN_DIR}/$1.sh"
@@ -370,12 +372,6 @@ if [ $# -gt 0 ]; then
 
         docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres \
             psql -U "${DOCKR_ASSET_USERNAME}" "${1:-postgres}"
-
-    # Command specific to image actions.
-    elif [ "$1" == "image" ] ; then
-        shift 1
-
-        . "${DOCKR_BIN_DIR}/image.sh"
 
     # Command specific to image actions.
     elif [ "$1" == "port" ] ; then
