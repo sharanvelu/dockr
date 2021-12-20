@@ -1,0 +1,42 @@
+#!/bin/bash
+
+## Dockr by Sharan
+
+# Terminate All Containers
+terminate_all() {
+    PS_RESULTS=$(docker ps -f "network=${DOCKR_NETWORK}" -q -a)
+    # shellcheck disable=SC2086
+    if [ -n "${PS_RESULTS}" ]; then
+        # Force remove containers.
+        if echo "$@" | grep -q -w "\-f"; then
+            docker rm -f ${PS_RESULTS} >> /dev/null
+            echo -e "All containers ${RED}force removed${CLR} successfully."
+
+        # Handles Normal Stop procedure.
+        else
+            echo -e "${RED}Stopping${CLR} all containers."
+
+            # Stops the container before removing..
+            docker stop ${PS_RESULTS} >> /dev/null
+            echo -e "All containers ${GREEN}stopped${CLR} successfully."
+
+            # Remove the container if it was down command.
+            if [ "${STOP_TYPE}" == "down" ]; then
+                docker rm ${PS_RESULTS} >> /dev/null
+                echo -e "All containers ${RED}removed${CLR} successfully."
+            fi
+        fi
+    else
+        echo -e "${RED}No${CLR} ${DOCKR_NAME} containers are running."
+    fi
+
+    exit 0
+}
+
+# Terminate Asset Containers
+terminate_asset() {
+    echo -e ""
+    echo -e "Stopping asset containers..."
+    docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" "$1"
+    echo -e "Asset containers ${GREEN}stopped${CLR} successfully."
+}

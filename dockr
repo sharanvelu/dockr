@@ -26,8 +26,13 @@ font_styling_vars
 # Dockr Dir
 DOCKR_HOME_DIR="${HOME}/dockr"
 
+# Dockr Data Dir
+DOCKR_DIR_DATA="${HOME}/.dockr"
+DOCKR_FILE_CONFIG="${DOCKR_DIR_DATA}/config"
+
 # Dockr Binary Dir
 DOCKR_BIN_DIR="${DOCKR_HOME_DIR}/res/bin"
+DOCKR_COMMON_BIN_DIR="${DOCKR_BIN_DIR}/common"
 
 # Dockr Compose Files
 DOCKR_COMPOSE_ASSET="${DOCKR_HOME_DIR}/dockr-compose-asset.yml"
@@ -68,6 +73,9 @@ if [ -z "${DOCKR_DOCKER_IMAGE}" ]; then
     DOCKR_DOCKER_IMAGE="sharanvelu/laravel-php:${DOCKR_PHP_VERSION}"
 fi
 export DOCKR_DOCKER_IMAGE
+
+# Composer Versions
+export DOCKR_COMPOSER_VERSION="${DOCKR_COMPOSER_VERSION:-2}"
 
 # Docker Compose file.
 DOCKER_COMPOSE_FILE="${DOCKR_COMPOSE}"
@@ -182,76 +190,60 @@ dockr_asset_container_is_stopped() {
 
 # Display Help command
 display_help() {
-    HELP_COMMAND="$1"
-    if [ "${HELP_COMMAND}" == "help" ]; then
-        HELP_TYPE="help"
-    fi
-
     . "${DOCKR_BIN_DIR}/help.sh"
 }
 
 if [ $# -gt 0 ]; then
     is_docker_engine_up
 
-    # Handle Dockr Up Command.
-    if [ "$1" == "up" ]; then
-        shift 1
-
-        . "${DOCKR_BIN_DIR}/up.sh"
-
-    # Commands for Dockr Down
-    elif [ "$1" == "down" ] || [ "$1" == "stop" ]; then
-        # shellcheck disable=SC2034
-        STOP_TYPE="$1"
-        shift 1
-
-        . "${DOCKR_BIN_DIR}/down.sh"
-
-    # Commands for Asset Containers Such as Mysql, Redis, ...
-    elif [ "$1" == "asset" ]; then
-        shift 1
-
-        . "${DOCKR_BIN_DIR}/asset.sh"
+    if [ -f "${DOCKR_BIN_DIR}/$1.sh" ]; then
+        # shellcheck source=path_to_respective_file
+        . "${DOCKR_BIN_DIR}/$1.sh"
 
     # Run "PHP" Command within web container.
     elif [ "$1" == "php" ]; then
         shift 1
         is_dockr_up
 
+        # shellcheck disable=SC2068
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php "$@"
+            php $@
 
     # Run "Composer" Command within web container.
     elif [ "$1" == "composer" ]; then
         shift 1
         is_dockr_up
 
+        # shellcheck disable=SC2068
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            composer "$@"
+            composer $@
 
     # Run "./vendor/bin" (Binary) Command within web container.
     elif [ "$1" == "bin" ]; then
         shift 1
         is_dockr_up
 
+        # shellcheck disable=SC2086
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            ./vendor/bin/"$*"
+            vendor/bin/$*
 
     # Run" PHP Artisan" Command within web container.
     elif [ "$1" == "artisan" ] || [ "$1" == "art" ]; then
         shift 1
         is_dockr_up
 
+        # shellcheck disable=SC2068
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php artisan "$@"
+            php artisan $@
 
     # Run "PHP Artisan Test" Command within web container.
     elif [ "$1" == "test" ]; then
         shift 1
         is_dockr_up
 
+        # shellcheck disable=SC2068
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php artisan test "$@"
+            php artisan test $@
 
     # Initiate a "laravel Tinker" within web container.
     elif [ "$1" == "tinker" ] ; then
@@ -385,17 +377,15 @@ if [ $# -gt 0 ]; then
 
         . "${DOCKR_BIN_DIR}/image.sh"
 
-    # RUN other Command with docker-compose
-    else
-        HELP_COMMAND="$1"
-        if [ "${HELP_COMMAND}" == "help" ]; then
-            # shellcheck disable=SC2034
-            HELP_TYPE="help"
-        fi
-
+    # Command specific to image actions.
+    elif [ "$1" == "port" ] ; then
         shift 1
 
-        . "${DOCKR_BIN_DIR}/help.sh"
+        echo "${DOCKR_PORT:-\-}"
+
+    # Display Help For unknown commands.
+    else
+        display_help "$1"
     fi
 
 # Execute PS Command if just "dockr" is run.

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+## Dockr by Sharan
+
+set_config() {
+    KEY=$1
+    VALUE=$2
+    NEW_DATA="${KEY}=${VALUE}"
+
+    if grep -q -w "${KEY}" "${DOCKR_FILE_CONFIG}"
+    then
+        PREVIOUS_DATA=$(grep -w "${KEY}" "${DOCKR_FILE_CONFIG}")
+        sed "s/${PREVIOUS_DATA}/${NEW_DATA}/g" "${DOCKR_FILE_CONFIG}" >> "${DOCKR_FILE_CONFIG}_temp"
+        rm -rf "${DOCKR_FILE_CONFIG}"
+        mv "${DOCKR_FILE_CONFIG}_temp" "${DOCKR_FILE_CONFIG}"
+    else
+        echo "${NEW_DATA}" >> "${DOCKR_FILE_CONFIG}"
+    fi
+}
+
+get_config() {
+    KEY=$1
+    DATA_ENTRY=$(grep -w "${KEY}" "${DOCKR_FILE_CONFIG}")
+    echo "${DATA_ENTRY//${KEY}\=/}"
+}
