@@ -56,6 +56,9 @@ DOCKR_COMPOSE="${DOCKR_HOME_DIR}/res/dockr-compose.yml"
 # Dockr Network
 export DOCKR_NETWORK="dockr"
 
+#Dockr Composer Cache Volume
+export DOCKR_COMPOSER_CACHE_VOLUME="dockr_composer_cache"
+
 # Project Name
 PROJECT_NAME=$(basename "${PROJECT_ROOT_DIR}")
 PROJECT_NAME=${PROJECT_NAME// /-}

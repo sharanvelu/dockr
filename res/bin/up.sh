@@ -17,8 +17,20 @@ check_env() {
 dockr_network_check() {
     if ! docker network ls | grep -q -w "${DOCKR_NETWORK}"
     then
+        echo -e "Creating ${YELLOW}${DOCKR_NAME}${CLR} Network."
         docker network create "${DOCKR_NETWORK}" >> /dev/null
         echo -e "${GREEN}${DOCKR_NAME} Network Created.${CLR}"
+        echo -e ""
+    fi
+}
+
+# Check for Dockr Network
+dockr_composer_cache_volume_check() {
+    if ! docker volume ls | grep -q -w "${DOCKR_COMPOSER_CACHE_VOLUME}"
+    then
+        echo -e "Creating ${YELLOW}${DOCKR_NAME} Composer Cache${CLR} Volume"
+        docker volume create "${DOCKR_COMPOSER_CACHE_VOLUME}" >> /dev/null
+        echo -e "${GREEN}${DOCKR_NAME} Composer Cache Volume Created.${CLR}"
         echo -e ""
     fi
 }
@@ -107,9 +119,13 @@ check_project_database() {
     fi
 }
 
+set -e
+
 check_env
 
 dockr_network_check
+
+dockr_composer_cache_volume_check
 
 asset_container_check
 
@@ -120,3 +136,7 @@ if [ -n "${DOCKR_WORKER}" ]; then
 fi
 
 docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" up -d web ${WORKER_SERVICE}
+
+if [ -n "${DOCKR_PORT}" ]; then
+    echo -e "\nYour Application should be running at ${RED}${UNDERLINE}http://dockr:${DOCKR_PORT}${CLR}"
+fi
