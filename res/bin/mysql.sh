@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Dockr by Sharan
+## DockR by Sharan
 
 # Note : "-A" flag in Some Commands
 # MySQL => Reading table information for completion of table and column names

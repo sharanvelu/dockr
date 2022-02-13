@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Dockr by Sharan
+## DockR by Sharan
 
 DOCKR_IMAGE_LIST_ALL="docker image ls \
         -f reference=sharanvelu/laravel-php \

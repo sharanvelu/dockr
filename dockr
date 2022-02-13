@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Dockr by Sharan
+## DockR by Sharan
 
 ## Exit when an error occurs instead of continuing the rest.
 
@@ -23,50 +23,37 @@ if [ -f "${PROJECT_ROOT_DIR}/.env" ]; then
     source "${PROJECT_ROOT_DIR}/.env"
 fi
 
-# Dockr Name
+# DockR Variables
 DOCKR_NAME="DockR"
-
-# Specify the Dockr Version
 DOCKR_VERSION="1.1"
+DOCKR_NETWORK="dockr"
+DOCKR_HOME_DIR="${HOME}/dockr"
+DOCKR_DATA_DIR="${HOME}/.dockr"
+DOCKR_BIN_DIR="${DOCKR_HOME_DIR}/res/bin"
+DOCKR_COMPOSE_ASSET="${DOCKR_HOME_DIR}/dockr-compose-asset.yml"
+DOCKR_COMPOSE="${DOCKR_HOME_DIR}/res/dockr-compose.yml"
+DOCKR_FILE_CONFIG="${DOCKR_DATA_DIR}/config"
+DOCKR_COMMON_BIN_DIR="${DOCKR_BIN_DIR}/common"
+DOCKR_COMPOSER_CACHE_VOLUME="dockr_composer_cache"
+DOCKR_ASSET_PROJECT_NAME="dockr_asset"
 
 # PROJECT ROOT DIR
 PROJECT_ROOT_DIR="$(pwd)"
 export PROJECT_ROOT_DIR
 
-# Dockr Dir
-DOCKR_HOME_DIR="${HOME}/dockr"
+export DOCKR_NETWORK
+export DOCKR_COMPOSER_CACHE_VOLUME
 
-# Dockr Data Dir
-DOCKR_DIR_DATA="${HOME}/.dockr"
-DOCKR_FILE_CONFIG="${DOCKR_DIR_DATA}/config"
-
-# Dockr Binary Dir
-DOCKR_BIN_DIR="${DOCKR_HOME_DIR}/res/bin"
-DOCKR_COMMON_BIN_DIR="${DOCKR_BIN_DIR}/common"
-
-# Dockr Compose Files
-DOCKR_COMPOSE_ASSET="${DOCKR_HOME_DIR}/dockr-compose-asset.yml"
-DOCKR_COMPOSE="${DOCKR_HOME_DIR}/res/dockr-compose.yml"
-
-# Dockr Network
-export DOCKR_NETWORK="dockr"
-
-#Dockr Composer Cache Volume
-export DOCKR_COMPOSER_CACHE_VOLUME="dockr_composer_cache"
+# DockR Asset Credentials
+export DOCKR_ASSET_USERNAME="dockr"
+export DOCKR_ASSET_PASSWORD="password"
+export DOCKR_ASSET_DEFAULT_DATABASE="dockr"
 
 # Project Name
 PROJECT_NAME=$(basename "${PROJECT_ROOT_DIR}")
 PROJECT_NAME=${PROJECT_NAME// /-}
 PROJECT_NAME=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
 export PROJECT_NAME
-
-# Dockr Asset Project Name
-DOCKR_ASSET_PROJECT_NAME="dockr_asset"
-
-# Dockr Asset Credentials
-export DOCKR_ASSET_USERNAME="dockr"
-export DOCKR_ASSET_PASSWORD="password"
-export DOCKR_ASSET_DEFAULT_DATABASE="dockr"
 
 ## Docker Container Name - Custom Name
 export DOCKR_CONTAINER_NAME=${DOCKR_CONTAINER_NAME:-"${PROJECT_NAME}"}
@@ -95,103 +82,9 @@ if [ -n "${DOCKR_CUSTOM_COMPOSE_FILE}" ]; then
 fi
 export DOCKER_COMPOSE_FILE
 
-# Checks For the working of Docker Engine...
-is_docker_engine_up() {
-    if ! docker info >/dev/null 2>&1; then
-        echo -e "${BOLD}Docker is not running.${CLR}"
-
-        exit 1
-    fi
-}
-
-# Checks For Dockr Running...
-is_dockr_up() {
-    # If needs to skip checking for dockr and
-    if [ -z "${DO_NOT_CHECK_DOCKR}" ]; then
-        if docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps | grep -q web; then
-            # Check if there is exited web containers
-            EXITED_STATE="$(docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps | grep web | grep exited)"
-            if [ -n "${EXITED_STATE}" ]; then
-                dockr_container_is_stopped
-
-            elif [ -n "$(docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps -q)" ]; then
-                cat null >/dev/null 2>&1
-                TERMINATE_EXECUTION=1
-            fi
-        fi
-        if [ -z "${TERMINATE_EXECUTION}" ]; then
-            dockr_is_down
-        fi
-    fi
-}
-
-# Checks For Dockr Asset Containers...
-is_dockr_asset_up() {
-    # If needs to skip checking for dockr and
-    if [ -z "${DO_NOT_CHECK_DOCKR}" ]; then
-        # Check if Docker asset containers are up (To avoid "not found" result in CLI)
-        #if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
-        #then
-        #    dockr_asset_container_not_running "$1"
-        #fi
-
-        if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep -q "$1"; then
-            # Check if there is exited mysql containers
-            EXITED_STATE="$(docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep "$1" | grep exited)"
-            if [ -n "${EXITED_STATE}" ]; then
-                dockr_asset_container_is_stopped "$1"
-            fi
-        else
-            dockr_asset_container_not_running "$1"
-        fi
-    fi
-}
-
-# Function that output Dockr container is not running.
-dockr_is_down() {
-    echo -e "${RED}No ${BOLD}${DOCKR_NAME} container is running from this Directory.${CLR}\n"
-    echo -e "${BOLD}Please check the directory.${CLR} Or"
-    echo -e "${BOLD}You can run ${DOCKR_NAME} using ${YELLOW}\"dockr up\"${CLR}"
-
-    exit 1
-}
-
-# Function that output Dockr container is not running.
-dockr_asset_container_not_running() {
-    echo -e "${BOLD}${DOCKR_NAME} Asset container \"$1\" is ${RED}not running.${CLR}\n"
-    echo -e "${BOLD}You can run ${DOCKR_NAME} asset container using ${YELLOW}\"dockr asset up\"${CLR}"
-
-    exit 1
-}
-
-# Function that output Dockr container is stopped and not terminated.
-dockr_container_is_stopped() {
-    echo -e "${BOLD}The ${DOCKR_NAME} container${CLR}(s) ${BOLD}is ${RED}stopped.${CLR}"
-    echo ""
-    echo -e "${BOLD}You can start the ${DOCKR_NAME} container${CLR}(s) ${BOLD}using ${YELLOW}\"dockr up\"${CLR}"
-
-    exit 1
-}
-
-# Function that output Dockr container is stopped and not terminated.
-dockr_asset_container_is_stopped() {
-    echo -e "${BOLD}The ${DOCKR_NAME} asset container \"$1\" is ${RED}stopped.${CLR}"
-    echo ""
-    echo -e "${BOLD}You can start the ${DOCKR_NAME} asset container${CLR}(s) ${BOLD}using the following command:${CLR}"
-    echo -e "${YELLOW}\"dockr asset up\"${CLR}"
-
-    exit 1
-}
-
-# Display Help command
-display_help() {
-    . "${DOCKR_BIN_DIR}/help.sh"
-}
-
-# Print Dockr Name
-display_dockr_name() {
-    echo -e "\n-- ${DOCKR_NAME} --\n"
-}
+# Source the helper files
+. "${DOCKR_BIN_DIR}/helpers/display_helpers.sh"
+. "${DOCKR_BIN_DIR}/helpers/status_helpers.sh"
 
 if [ $# -gt 0 ]; then
     is_docker_engine_up

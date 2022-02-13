@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Dockr by Sharan
+## DockR by Sharan
 
 # Check Mandatory Environment variables
 check_env() {
@@ -13,7 +13,7 @@ check_env() {
     export DOCKR_PORT=${DOCKR_PORT:-80}
 }
 
-# Check for Dockr Network
+# Check for DockR Network
 dockr_network_check() {
     if ! docker network ls | grep -q -w "${DOCKR_NETWORK}"
     then
@@ -24,7 +24,7 @@ dockr_network_check() {
     fi
 }
 
-# Check for Dockr Network
+# Check for DockR Network
 dockr_composer_cache_volume_check() {
     if ! docker volume ls | grep -q -w "${DOCKR_COMPOSER_CACHE_VOLUME}"
     then
