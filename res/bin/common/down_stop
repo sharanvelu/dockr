@@ -5,7 +5,6 @@
 # Terminate All Containers
 terminate_all() {
     PS_RESULTS=$(docker ps -f "network=${DOCKR_NETWORK}" -q -a)
-    # shellcheck disable=SC2086
     if [ -n "${PS_RESULTS}" ]; then
         # Force remove containers.
         if echo "$@" | grep -q -w "\-f"; then

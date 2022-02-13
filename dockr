@@ -91,7 +91,6 @@ if [ $# -gt 0 ]; then
 
     # Dynamic command execution using separate files.
     if [ -f "${DOCKR_BIN_DIR}/$1.sh" ]; then
-        # shellcheck source=path_to_respective_file
         . "${DOCKR_BIN_DIR}/$1.sh"
 
     # Dynamic PHP command execution using separate files from Bin PHP directory.
