@@ -35,8 +35,6 @@ export PROJECT_ROOT_DIR
 
 # Dockr Dir
 DOCKR_HOME_DIR="${HOME}/dockr"
-# Todo : Remove this Line
-DOCKR_HOME_DIR="${HOME}/Projects/dockr"
 
 # Dockr Data Dir
 DOCKR_DIR_DATA="${HOME}/.dockr"
