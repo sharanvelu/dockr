@@ -2,6 +2,8 @@
 
 ## Dockr by Sharan
 
+set -e
+
 STOP_TYPE=$1
 
 # Include common scripts for down and stop command

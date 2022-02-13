@@ -21,5 +21,11 @@ set_config() {
 get_config() {
     KEY=$1
     DATA_ENTRY=$(grep -w "${KEY}" "${DOCKR_FILE_CONFIG}")
-    echo "${DATA_ENTRY//${KEY}\=/}"
+    CONFIG_VALUE="${DATA_ENTRY//${KEY}\=/}"
+
+    if [ "${CONFIG_VALUE}" == "" ]; then
+        return 1
+    fi
+
+    return "${CONFIG_VALUE}"
 }

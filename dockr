@@ -4,26 +4,21 @@
 
 ## Exit when an error occurs instead of continuing the rest.
 
-# shellcheck disable=SC2034
-font_styling_vars() {
-    # Font Styling
-    CLR='\033[0m'
-    RED='\033[1;31m'
-    GREEN='\033[1;32m'
-    YELLOW='\033[1;33m'
-    WHITE='\033[1;37m'
-    CYAN='\033[1;36m'
-    BOLD='\033[1m'
-    UNDERLINE='\033[4m'
-    ITALIC='\033[3m'
-}
-
-font_styling_vars
+# Font Styling
+CLR='\033[0m'
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+WHITE='\033[1;37m'
+CYAN='\033[1;36m'
+BOLD='\033[1m'
+UNDERLINE='\033[4m'
+ITALIC='\033[3m'
 
 # Project Root Dir
 PROJECT_ROOT_DIR="$(pwd)"
 
-# Source the ".env" file so Laravel's environment variables are available
+# Source the ".env" file so Laravel environment variables are available
 if [ -f "${PROJECT_ROOT_DIR}/.env" ]; then
     source "${PROJECT_ROOT_DIR}/.env"
 fi
@@ -40,6 +35,8 @@ export PROJECT_ROOT_DIR
 
 # Dockr Dir
 DOCKR_HOME_DIR="${HOME}/dockr"
+# Todo : Remove this Line
+DOCKR_HOME_DIR="${HOME}/Projects/dockr"
 
 # Dockr Data Dir
 DOCKR_DIR_DATA="${HOME}/.dockr"
@@ -100,11 +97,10 @@ if [ -n "${DOCKR_CUSTOM_COMPOSE_FILE}" ]; then
 fi
 export DOCKER_COMPOSE_FILE
 
-
 # Checks For the working of Docker Engine...
 is_docker_engine_up() {
-    if ! docker info > /dev/null 2>&1; then
-        echo -e "${WHITE}Docker is not running.${CLR}" >&2
+    if ! docker info >/dev/null 2>&1; then
+        echo -e "${BOLD}Docker is not running.${CLR}"
 
         exit 1
     fi
@@ -114,15 +110,14 @@ is_docker_engine_up() {
 is_dockr_up() {
     # If needs to skip checking for dockr and
     if [ -z "${DO_NOT_CHECK_DOCKR}" ]; then
-        if docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps | grep -q web
-        then
+        if docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps | grep -q web; then
             # Check if there is exited web containers
             EXITED_STATE="$(docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps | grep web | grep exited)"
             if [ -n "${EXITED_STATE}" ]; then
                 dockr_container_is_stopped
 
             elif [ -n "$(docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps -q)" ]; then
-                cat null > /dev/null 2>&1
+                cat null >/dev/null 2>&1
                 TERMINATE_EXECUTION=1
             fi
         fi
@@ -137,13 +132,12 @@ is_dockr_asset_up() {
     # If needs to skip checking for dockr and
     if [ -z "${DO_NOT_CHECK_DOCKR}" ]; then
         # Check if Docker asset containers are up (To avoid "not found" result in CLI)
-#        if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
-#        then
-#            dockr_asset_container_not_running "$1"
-#        fi
+        #if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
+        #then
+        #    dockr_asset_container_not_running "$1"
+        #fi
 
-        if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep -q "$1"
-        then
+        if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep -q "$1"; then
             # Check if there is exited mysql containers
             EXITED_STATE="$(docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep "$1" | grep exited)"
             if [ -n "${EXITED_STATE}" ]; then
@@ -157,42 +151,36 @@ is_dockr_asset_up() {
 
 # Function that output Dockr container is not running.
 dockr_is_down() {
-    echo -e "${RED}No ${WHITE}${DOCKR_NAME} container is running.${CLR}" >&2
-    echo "" >&2
-    echo -e "${WHITE}You can run ${DOCKR_NAME} using any one of the following commands:${CLR}" >&2
-    echo -e "${YELLOW}\"dockr up\" ${WHITE}For Normal Mode${CLR}  or" >&2
-    echo -e "${YELLOW}\"dockr up -d\" ${WHITE}For Detached Mode${CLR}" >&2
+    echo -e "${RED}No ${BOLD}${DOCKR_NAME} container is running from this Directory.${CLR}\n"
+    echo -e "${BOLD}Please check the directory.${CLR} Or"
+    echo -e "${BOLD}You can run ${DOCKR_NAME} using ${YELLOW}\"dockr up\"${CLR}"
 
     exit 1
 }
 
 # Function that output Dockr container is not running.
 dockr_asset_container_not_running() {
-    echo -e "${WHITE}${DOCKR_NAME} Asset container \"$1\" is ${RED}not running.${CLR}" >&2
-    echo "" >&2
-    echo -e "${WHITE}You can run ${DOCKR_NAME} asset container using the following command:${CLR}" >&2
-    echo -e "${YELLOW}\"dockr asset up\"${CLR}" >&2
+    echo -e "${BOLD}${DOCKR_NAME} Asset container \"$1\" is ${RED}not running.${CLR}\n"
+    echo -e "${BOLD}You can run ${DOCKR_NAME} asset container using ${YELLOW}\"dockr asset up\"${CLR}"
 
     exit 1
 }
 
 # Function that output Dockr container is stopped and not terminated.
 dockr_container_is_stopped() {
-    echo -e "${WHITE}The ${DOCKR_NAME} container${CLR}(s) ${WHITE}is ${RED}stopped.${CLR}" >&2
-    echo "" >&2
-    echo -e "${WHITE}You can start the ${DOCKR_NAME} container${CLR}(s) ${WHITE}using any one of the following commands:${CLR}" >&2
-    echo -e "${YELLOW}\"dockr start\" ${CLR}or ${YELLOW}\"dockr up -d\" ${WHITE}For Detached Mode${CLR} or" >&2
-    echo -e "${YELLOW}\"dockr up\" ${WHITE}For Normal Mode${CLR}" >&2
+    echo -e "${BOLD}The ${DOCKR_NAME} container${CLR}(s) ${BOLD}is ${RED}stopped.${CLR}"
+    echo ""
+    echo -e "${BOLD}You can start the ${DOCKR_NAME} container${CLR}(s) ${BOLD}using ${YELLOW}\"dockr up\"${CLR}"
 
     exit 1
 }
 
 # Function that output Dockr container is stopped and not terminated.
 dockr_asset_container_is_stopped() {
-    echo -e "${WHITE}The ${DOCKR_NAME} asset container \"$1\" is ${RED}stopped.${CLR}" >&2
-    echo "" >&2
-    echo -e "${WHITE}You can start the ${DOCKR_NAME} asset container${CLR}(s) ${WHITE}using the following command:${CLR}" >&2
-    echo -e "${YELLOW}\"dockr asset up\"${CLR}" >&2
+    echo -e "${BOLD}The ${DOCKR_NAME} asset container \"$1\" is ${RED}stopped.${CLR}"
+    echo ""
+    echo -e "${BOLD}You can start the ${DOCKR_NAME} asset container${CLR}(s) ${BOLD}using the following command:${CLR}"
+    echo -e "${YELLOW}\"dockr asset up\"${CLR}"
 
     exit 1
 }
@@ -200,6 +188,11 @@ dockr_asset_container_is_stopped() {
 # Display Help command
 display_help() {
     . "${DOCKR_BIN_DIR}/help.sh"
+}
+
+# Print Dockr Name
+display_dockr_name() {
+    echo -e "\n-- ${DOCKR_NAME} --\n"
 }
 
 if [ $# -gt 0 ]; then
@@ -210,104 +203,9 @@ if [ $# -gt 0 ]; then
         # shellcheck source=path_to_respective_file
         . "${DOCKR_BIN_DIR}/$1.sh"
 
-    # Run "PHP" Command within web container.
-    elif [ "$1" == "php" ]; then
-        shift 1
-        is_dockr_up
-
-        # shellcheck disable=SC2068
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php $@
-
-    # Run "Composer" Command within web container.
-    elif [ "$1" == "composer" ]; then
-        shift 1
-        is_dockr_up
-
-        # shellcheck disable=SC2068
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            composer $@
-
-    # Run "./vendor/bin" (Binary) Command within web container.
-    elif [ "$1" == "bin" ]; then
-        shift 1
-        is_dockr_up
-
-        # shellcheck disable=SC2086
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            vendor/bin/$*
-
-    # Run" PHP Artisan" Command within web container.
-    elif [ "$1" == "artisan" ] || [ "$1" == "art" ]; then
-        shift 1
-        is_dockr_up
-
-        # shellcheck disable=SC2068
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php artisan $@
-
-    # Run "PHP Artisan Test" Command within web container.
-    elif [ "$1" == "test" ]; then
-        shift 1
-        is_dockr_up
-
-        # shellcheck disable=SC2068
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php artisan test $@
-
-    # Initiate a "laravel Tinker" within web container.
-    elif [ "$1" == "tinker" ] ; then
-        shift 1
-        is_dockr_up
-
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php artisan tinker
-
-    # Run "PHP Artisan Migrate" Command within web container.
-    elif [ "$1" == "migrate" ] ; then
-        shift 1
-        is_dockr_up
-
-        MIGRATION_COMMAND="migrate"
-        if [ $# -gt 0 ]; then
-            MIGRATION_COMMAND="${MIGRATION_COMMAND}:$*"
-        fi
-
-        # shellcheck disable=SC2086
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php artisan ${MIGRATION_COMMAND}
-
-    # Run "PHP Artisan db:seed" Command along with "--class" flag within web container.
-    elif [ "$1" == "seed" ] ; then
-        shift 1
-        is_dockr_up
-
-        SEEDER_COMMAND="db:seed"
-        if [ $# -gt 0 ]; then
-            SEEDER_COMMAND="${SEEDER_COMMAND} --class=$1"
-        fi
-
-        # shellcheck disable=SC2086
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php artisan ${SEEDER_COMMAND}
-
-    # Run artisan make commands within the web container
-    elif [ "$1" == "make" ]; then
-        shift 1
-        is_dockr_up
-
-        # shellcheck disable=SC2086
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php artisan make:$*
-
-    # Run artisan queue commands within the web container
-    elif [ "$1" == "queue" ]; then
-        shift 1
-        is_dockr_up
-
-        # shellcheck disable=SC2086
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            php artisan queue:$*
+    # Dynamic PHP command execution using separate files from Bin PHP directory.
+    elif [ -f "${DOCKR_BIN_DIR}/php/$1.sh" ]; then
+        . "${DOCKR_BIN_DIR}/php/$1.sh"
 
     # Run "Node" Command within web container.
     elif [ "$1" == "node" ]; then
@@ -347,52 +245,15 @@ if [ $# -gt 0 ]; then
         is_dockr_up
 
         docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            bash "$@"
-
-    # Run PhpUnit inside the container
-    elif [ "$1" == "phpunit" ]; then
-        shift 1
-        is_dockr_up
-
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            ./vendor/bin/phpunit "$@"
-
-    # Initiate a session within mysql container.
-    elif [ "$1" == "mysql" ]; then
-        shift 1
-        is_dockr_asset_up mysql
-
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql \
-            bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root $1"
-
-    # Initiate a Redis Session within Redis container.
-    elif [ "$1" == "redis" ] ; then
-        shift 1
-        is_dockr_asset_up redis
-
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec redis \
-            redis-cli
-
-    # Initiate a Postgres Session within Postgres container with DB specified.
-    elif [ "$1" == "postgres" ] ; then
-        shift 1
-        is_dockr_asset_up postgres
-
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres \
-            psql -U "${DOCKR_ASSET_USERNAME}" "${1:-postgres}"
-
-    # Display the Current Project's PORT number.
-    elif [ "$1" == "port" ] ; then
-        shift 1
-
-        echo "${DOCKR_PORT:--}"
+            bash
 
     # Display the DockR Version.
-    elif [ "$1" == "--version" ] || [ "$1" == "-version" ] || [ "$1" == "-v" ] || [ "$1" == "--v" ] ; then
+    elif [ "$1" == "--version" ] || [ "$1" == "-version" ] || [ "$1" == "-v" ] || [ "$1" == "--v" ]; then
         shift 1
 
-        echo "DockR - A Local development environment for Laravel using Docker"
-        echo "Version : ${DOCKR_VERSION:---}"
+        display_dockr_name
+        echo -e "A Local development environment for Laravel using Docker"
+        echo -e "Current Version : ${DOCKR_VERSION:-<unknown dev version>}"
 
     # Display Help For unknown commands.
     else

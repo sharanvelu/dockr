@@ -37,7 +37,9 @@ dockr_composer_cache_volume_check() {
 
 # Manage Asset Containers (Mysql, Redis, ...)
 asset_container_check() {
-    if [ -z "${DOCKR_SKIP_ASSET}" ]; then
+    if [ -n "${DOCKR_SKIP_ASSET}" ]; then
+        echo -e "${YELLOW}DOCKR_SKIP_ASSET${CLR} is provided. Skipping Asset containers and DB check.\n"
+    else
         # Check if Docker asset containers are up (To avoid "not found" result in CLI)
 #        if ! docker-compose ls | grep "${DOCKR_ASSET_PROJECT_NAME}" >> /dev/null
 #        then
@@ -75,7 +77,9 @@ asset_container_check() {
 # Check for database existence mentioned in "DB_DATABASE" env
 check_project_database() {
     if [ -n "${DOCKR_SKIP_ASSET}" ] || [ -n "${DOCKR_SKIP_DB_CHECK}" ]; then
-        echo "" >> /dev/null
+        if [ -n "${DOCKR_SKIP_DB_CHECK}" ] && [ -z "${DOCKR_SKIP_ASSET}" ]; then
+            echo -e "${YELLOW}DOCKR_SKIP_DB_CHECK${CLR} is provided. Skipping DB check.\n"
+        fi
     else
         if [ "$DB_CONNECTION" == "mysql" ]; then
             echo -e "Checking for database ${CYAN}${DB_DATABASE}${CLR} presence in Mysql."
@@ -86,11 +90,11 @@ check_project_database() {
             fi
 
             # Create DB with specified name is not present.
-            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"show databases;\"" | grep -q -w "${DB_DATABASE}"
+            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"show databases;\" | grep -q -w ${DB_DATABASE}"
             then
                 echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
-                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"create database ${DB_DATABASE}\"" >> /dev/null
-                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"GRANT ALL PRIVILEGES ON ${DB_DATABASE}.* TO '${DOCKR_ASSET_USERNAME}'@'%'\"" >> /dev/null
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"create database ${DB_DATABASE}\" >> /dev/null"
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"GRANT ALL PRIVILEGES ON *.* TO '${DOCKR_ASSET_USERNAME}'@'%'\" >> /dev/null"
                 echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} created successfully."
             else
                 echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} already exists. Skipping..."
@@ -105,10 +109,10 @@ check_project_database() {
             fi
 
             # Create DB with specified name is not present.
-            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres psql -U "${DOCKR_ASSET_USERNAME}" -l | grep -q -w "${DB_DATABASE}"
+            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres bash -c "psql -U ${DOCKR_ASSET_USERNAME} -l | grep -q -w ${DB_DATABASE}"
             then
                 echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
-                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres psql -U "${DOCKR_ASSET_USERNAME}" -d "${DOCKR_ASSET_DEFAULT_DATABASE}" -c "create database ${DB_DATABASE}" >> /dev/null
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres bash -c "psql -U ${DOCKR_ASSET_USERNAME} -d ${DOCKR_ASSET_DEFAULT_DATABASE} -c \"create database ${DB_DATABASE}\" >> /dev/null"
                 echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} created successfully."
             else
                 echo -e "Database ${YELLOW}${DB_DATABASE}${CLR} already exists. Skipping..."

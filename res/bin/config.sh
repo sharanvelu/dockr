@@ -11,4 +11,5 @@ fi
 
 if [ $2 == 'get' ]; then
     get_config $3
+    echo $?
 fi

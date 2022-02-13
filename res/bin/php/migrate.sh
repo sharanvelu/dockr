@@ -1,0 +1,18 @@
+#!/bin/bash
+
+## Dockr by Sharan
+
+shift 1
+
+# Check if DockR is running
+is_dockr_up
+
+# Generate migration command.
+MIGRATION_COMMAND="migrate"
+if [ $# -gt 0 ]; then
+    MIGRATION_COMMAND="${MIGRATION_COMMAND}:$*"
+fi
+
+# Run migration command within the container.
+docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
+    php artisan ${MIGRATION_COMMAND}
