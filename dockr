@@ -3,6 +3,7 @@
 ## DockR by Sharan
 
 ## Exit when an error occurs instead of continuing the rest.
+set -e
 
 # Font Styling
 CLR='\033[0m'
