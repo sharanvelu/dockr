@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Dockr by Sharan
+## DockR by Sharan
 
 print_list_item() {
     COMMAND=$1
@@ -41,7 +41,7 @@ print_usage() {
 }
 
 print_note() {
-    printf "\n%s%s\n" "Note : " "$@"
+    echo -e "\nNote : $@"
 }
 
 print_all() {
@@ -209,6 +209,26 @@ if [ $# -gt 0 ]; then
     elif [ "$1" == "status" ]; then
         print_usage "dockr status"
         echo -e "Prints the status of the Asset Containers and the project containers"
+
+    # Status
+    elif [ "$1" == "mysql_import" ]; then
+        print_usage "dockr mysql import <db_name> <path_to_file.sql>"
+        echo -e "Imports the specified <path_to_file.sql> from host machine to the specified <db_name>.\n"
+        echo "Example : "
+        print_example "dockr mysql import dockr_db /root/dockr/dockr_db_import.sql"
+
+        print_note "Don't use <path_to_file.sql> files with ${YELLOW}blank space \" \"${CLR}. If there is any blank space, rename the file and try again."
+
+    # Status
+    elif [ "$1" == "mysql_query" ]; then
+        print_usage "dockr mysql <db_name> -q \"query statement\""
+        echo -e "Executes the specified query in specified DB and prints the result.\n"
+        echo "Example : "
+        print_example "dockr mysql test_db -q \"select * from users\""
+        print_example "dockr mysql test_db -q \"create database test_database\""
+        print_example "dockr mysql test_database -q \"select * from users\""
+
+        print_note "Watch the ${BOLD}\"double quotes\"${CLR} around the query statement. You Must specify the double quotes(\")."
 
     else
         print_all $1

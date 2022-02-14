@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Dockr by Sharan
+## DockR by Sharan
 
 # Include common scripts for down and stop command
 . "${DOCKR_COMMON_BIN_DIR}/config"
@@ -11,4 +11,5 @@ fi
 
 if [ $2 == 'get' ]; then
     get_config $3
+    echo $?
 fi

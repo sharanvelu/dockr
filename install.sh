@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Dockr by Sharan
+## DockR by Sharan
 
 # This script should be run via curl:
 #   bash -c "$(curl -fsSL install.dockr.in)"
@@ -17,10 +17,10 @@ RED='\033[1;31m'
 GREEN='\033[1;32m'
 BOLD='\033[1m'
 
-## Dockr Branch
+## DockR Branch
 DOCKR_BRANCH="release"
 
-## Dockr Name
+## DockR Name
 DOCKR_NAME="DockR"
 
 ## DIRECTORY
@@ -63,7 +63,7 @@ system_check() {
     esac
 }
 
-# Add Hosts entry For Dockr
+# Add Hosts entry For DockR
 add_host_entry() {
     display_process "Adding Hosts Entry for ${DOCKR_NAME} Network..."
 
@@ -91,19 +91,19 @@ git_perform() {
         exiting "Git isn't available or not installed correctly."
     }
 
-    # Install Dockr
+    # Install DockR
     if [ "$1" == "install" ]; then
         display_process "Getting ${DOCKR_NAME} from git."
         git clone --single-branch --branch "${DOCKR_BRANCH}" --no-tags -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
 
-    # Update Dockr
+    # Update DockR
     elif [ "$1" == "update" ]; then
         # If existing dockr is not a git repository, remove the existing dir and add it as git repo.
         if [ ! -d "${DOCKR_DIR_HOME}/.git" ]; then
             rm -rf "${DOCKR_DIR_HOME}"
             git_perform "install"
 
-        # Dockr is already a git repo. Pull the latest version.
+        # DockR is already a git repo. Pull the latest version.
         else
             echo "${DOCKR_NAME} already exists. Trying to update ${DOCKR_NAME} using git..."
             CURRENT_DIR="$(pwd)"
@@ -117,9 +117,9 @@ git_perform() {
     fi
 }
 
-# Finish Setup by transferring Temp dir to Dockr dir.
+# Finish Setup by transferring Temp dir to DockR dir.
 finalize_setup() {
-    display_process "Finalizing Dockr Setup..."
+    display_process "Finalizing ${DOCKR_NAME} Setup..."
 
     # Remove the dockr bin file
     rm -rf "${DOCKR_DIR_BIN}/dockr"

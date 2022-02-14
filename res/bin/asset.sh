@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Dockr by Sharan
+## DockR by Sharan
 
 # Start the Asset Containers
 if [ "$2" == "up" ]; then
