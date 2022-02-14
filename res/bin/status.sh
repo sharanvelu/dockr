@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Dockr by Sharan
+## DockR by Sharan
 
 PS_FORMAT="table {{.ID}}\t{{.Names}}\t{{.Label \"SERVICE\"}}\t{{title .State}}"
 

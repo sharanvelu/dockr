@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Dockr by Sharan
+## DockR by Sharan
 
 STOP_TYPE=$1
 
