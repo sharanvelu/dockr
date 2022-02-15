@@ -3,6 +3,7 @@
 ## DockR by Sharan
 
 ## Exit when an error occurs instead of continuing the rest.
+ set +e
 
 # Font Styling
 CLR='\033[0m'
@@ -96,6 +97,14 @@ if [ $# -gt 0 ]; then
     # Dynamic PHP command execution using separate files from Bin PHP directory.
     elif [ -f "${DOCKR_BIN_DIR}/php/$1.sh" ]; then
         . "${DOCKR_BIN_DIR}/php/$1.sh"
+
+    # Dynamic PHP command execution using separate files from Bin PHP directory.
+    elif [ "$1" == "art" ]; then
+        . "${DOCKR_BIN_DIR}/php/artisan.sh"
+
+    # Dynamic PHP command execution using separate files from Bin PHP directory.
+    elif [ "$1" == "psql" ]; then
+        . "${DOCKR_BIN_DIR}/postgres.sh"
 
     # Run "Node" Command within web container.
     elif [ "$1" == "node" ]; then
