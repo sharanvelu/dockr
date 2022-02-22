@@ -12,10 +12,13 @@
 ## Exit when an error occurs instead of continuing the rest.
 set -e
 
-CLR='\033[0m'
-RED='\033[1;31m'
-GREEN='\033[1;32m'
-BOLD='\033[1m'
+CLR="\033[0m"
+RED="\033[38;5;196m"
+GREEN="\033[38;1;32m"
+ORANGE="\033[38;5;202m"
+LAVENDER="\033[38;5;093m"
+PINK="\033[38;5;163m"
+BOLD="\033[1m"
 
 ## DockR Branch
 DOCKR_BRANCH="release"
@@ -54,12 +57,13 @@ command_exists() {
 # Verifying operating system
 system_check() {
     case "$(uname -s)" in
-        Linux*) ;;
-        Darwin*) ;;
-        *)
-          echo "OS (operating system) ([$(uname -s)]) not supported." >&2
-          echo "${DOCKR_NAME} supports macOS, Linux, and Windows (WSL2)." >&2
-          exit 1
+    Linux*) ;;
+    Darwin*) ;;
+    *)
+        echo "OS (operating system) ([$(uname -s)]) not supported." >&2
+        echo "${DOCKR_NAME} supports macOS, Linux, and Windows (WSL2)." >&2
+        exit 1
+        ;;
     esac
 }
 
@@ -73,7 +77,7 @@ add_host_entry() {
             echo ""
             echo "# Added by ${DOCKR_NAME}"
             echo "127.0.0.1 dockr"
-        } | sudo tee -a /etc/hosts > /dev/null
+        } | sudo tee -a /etc/hosts >/dev/null
     else
         sleep 1
         echo -e "Hosts entry already exists. Skipping..."
@@ -152,23 +156,20 @@ add_permissions() {
     chmod u+x "${DOCKR_DIR_HOME}/dockr"
 
     # Give permission to /usr/local/bin directory to the current user
-    sudo chown -R `whoami` "${DOCKR_DIR_BIN}"
+    sudo chown -R $(whoami) "${DOCKR_DIR_BIN}"
 }
 
 # Do specific actions related to the OS
 os_specific_actions() {
     # Execute some commands if the system is Linux using WSL kernel
-    if is_wsl
-    then
+    if is_wsl; then
         wsl_specific_command
     fi
 
     # Execute some commands if the system is mac
-    if is_mac
-    then
+    if is_mac; then
         # Execute specific commands if the system is M1 based Mac
-        if is_mac_m1
-        then
+        if is_mac_m1; then
             mac_specific_command
         fi
     fi
@@ -176,29 +177,29 @@ os_specific_actions() {
 
 # check if the machine is Linux using WSL
 is_wsl() {
-	case "$(uname -r)" in
-	    *microsoft* ) true ;; # WSL 2
-        *Microsoft* ) true ;; # WSL 1
-        * ) false;;
-	esac
+    case "$(uname -r)" in
+    *microsoft*) true ;; # WSL 2
+    *Microsoft*) true ;; # WSL 1
+    *) false ;;
+    esac
 }
 
 # check if the machine is MacOS
 is_mac() {
-	case "$(uname -s)" in
-        *darwin* ) true ;;
-        *Darwin* ) true ;;
-        * ) false;;
-	esac
+    case "$(uname -s)" in
+    *darwin*) true ;;
+    *Darwin*) true ;;
+    *) false ;;
+    esac
 }
 
 # check if the machine is M1 based Mac
 is_mac_m1() {
-	case "$(uname -m)" in
-        *arm64* ) true ;;
-        *arm* ) true ;;
-        * ) false;;
-	esac
+    case "$(uname -m)" in
+    *arm64*) true ;;
+    *arm*) true ;;
+    *) false ;;
+    esac
 }
 
 # Execute Windows specific commands if any
@@ -212,18 +213,22 @@ mac_specific_command() {
 }
 
 print_dockr_success() {
-    echo -e "${RED}"
-    printf '           ___                       _______ \n'
-    printf '          /  /_____ ____   __   __  /  __  / \n'
-    printf '   ______/  /  __  / __/ /  / /  / /  / / /  \n'
-    printf '  /  ___   / /  / / /   /  //_ /  /  /_/_/   \n'
-    printf ' /  /__/  / /__/ / /__ /  /\  \  /  /\ \     \n'
-    printf '/________/______/____//__/  \__\/__/  \_\    \n'
+    MULTI_COLORS="
+      $(printf ${RED})
+      $(printf ${ORANGE})
+      $(printf ${GREEN})
+      $(printf ${LAVENDER})
+      $(printf ${PINK})
+    "
+
+    printf '%s           ___ %s        %s      %s          %s_______ \n' $MULTI_COLORS
+    printf '%s          /  /%s ______ %s____  %s __   __  %s/  __  / \n' $MULTI_COLORS
+    printf '%s   ______/  /%s/  __  /%s/ __/ %s/  / /  / %s/  / / /  \n' $MULTI_COLORS
+    printf '%s  /  ___   /%s/ /  / /%s/ /   %s/  //_ /  %s/  /_/_/   \n' $MULTI_COLORS
+    printf '%s /  /__/  /%s/ /__/ /%s/ /__ %s/  /\  \  %s/  /\ \     \n' $MULTI_COLORS
+    printf '%s/________/%s/______/%s/____/%s/__/  \__\%s/__/  \_\    \n' $MULTI_COLORS
 
     echo -e "${CLR}"
-#    printf '       ___  .  . .    ___  .     .    .         \n'
-#    printf '      /__  /--/ /_\  /__/ /_\   / \  /          \n'
-#    printf 'BY   ___/ /  / /   \/ |  /   \ /   \/           \n'
     echo -e "                           By --${BOLD} SHARAN ${CLR}--"
 
     if [ "$1" == "install" ]; then
