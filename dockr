@@ -2,26 +2,30 @@
 
 ## DockR by Sharan
 
-## Exit when an error occurs instead of continuing the rest.
-# set +e
-
 # Font Styling
-CLR='\033[0m'
-RED='\033[1;31m'
-GREEN='\033[1;32m'
-YELLOW='\033[1;33m'
-WHITE='\033[1;37m'
-CYAN='\033[1;36m'
-BOLD='\033[1m'
-UNDERLINE='\033[4m'
-ITALIC='\033[3m'
+CLR="\033[0m"
+RED="\033[1;31m"
+GREEN="\033[1;32m"
+YELLOW="\033[1;33m"
+WHITE="\033[1;37m"
+CYAN="\033[1;36m"
+BOLD="\033[1m"
+UNDERLINE="\033[4m"
+ITALIC="\033[3m"
+
+# Checks For the working of Docker Engine...
+if ! docker info >> /dev/null 2>&1; then
+    echo -e "${BOLD}Docker is not running.${CLR}"
+
+    exit 1
+fi
 
 # Project Root Dir
 PROJECT_ROOT_DIR="$(pwd)"
 
 # Source the ".env" file so Laravel environment variables are available
 if [ -f "${PROJECT_ROOT_DIR}/.env" ]; then
-    source "${PROJECT_ROOT_DIR}/.env"
+    . "${PROJECT_ROOT_DIR}/.env"
 fi
 
 # DockR Variables
@@ -35,6 +39,7 @@ DOCKR_COMPOSE_ASSET="${DOCKR_HOME_DIR}/dockr-compose-asset.yml"
 DOCKR_COMPOSE="${DOCKR_HOME_DIR}/res/dockr-compose.yml"
 DOCKR_FILE_CONFIG="${DOCKR_DATA_DIR}/config"
 DOCKR_COMMON_BIN_DIR="${DOCKR_BIN_DIR}/common"
+DOCKR_HELPER_BIN_DIR="${DOCKR_BIN_DIR}/helpers"
 DOCKR_COMPOSER_CACHE_VOLUME="dockr_composer_cache"
 DOCKR_ASSET_PROJECT_NAME="dockr_asset"
 
@@ -57,10 +62,10 @@ PROJECT_NAME=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
 export PROJECT_NAME
 
 ## Docker Container Name - Custom Name
-export DOCKR_CONTAINER_NAME=${DOCKR_CONTAINER_NAME:-"${PROJECT_NAME}"}
+export DOCKR_CONTAINER_NAME="${DOCKR_CONTAINER_NAME:-${PROJECT_NAME}}"
 
 # Define custom environment variables
-export DOCKR_PHP_VERSION=${DOCKR_PHP_VERSION:-8.0}
+export DOCKR_PHP_VERSION="${DOCKR_PHP_VERSION:-latest}"
 if [ -z "${DOCKR_DOCKER_IMAGE}" ]; then
     DOCKR_DOCKER_IMAGE="sharanvelu/laravel-php:${DOCKR_PHP_VERSION}"
 fi
@@ -79,17 +84,15 @@ if [ -n "${DOCKR_CUSTOM_COMPOSE_FILE}" ]; then
 
         exit 1
     fi
-    echo ''
+    echo ""
 fi
 export DOCKER_COMPOSE_FILE
 
 # Source the helper files
-. "${DOCKR_BIN_DIR}/helpers/display_helpers.sh"
-. "${DOCKR_BIN_DIR}/helpers/status_helpers.sh"
+. "${DOCKR_HELPER_BIN_DIR}/display_helpers.sh"
+. "${DOCKR_HELPER_BIN_DIR}/status_helpers.sh"
 
 if [ $# -gt 0 ]; then
-    is_docker_engine_up
-
     # Dynamic command execution using separate files.
     if [ -f "${DOCKR_BIN_DIR}/$1.sh" ]; then
         . "${DOCKR_BIN_DIR}/$1.sh"
@@ -98,61 +101,13 @@ if [ $# -gt 0 ]; then
     elif [ -f "${DOCKR_BIN_DIR}/php/$1.sh" ]; then
         . "${DOCKR_BIN_DIR}/php/$1.sh"
 
-    # Dynamic PHP command execution using separate files from Bin PHP directory.
-    elif [ "$1" == "art" ]; then
-        . "${DOCKR_BIN_DIR}/php/artisan.sh"
-
-    # Dynamic PHP command execution using separate files from Bin PHP directory.
-    elif [ "$1" == "psql" ]; then
-        . "${DOCKR_BIN_DIR}/postgres.sh"
-
-    # Run "Node" Command within web container.
-    elif [ "$1" == "node" ]; then
-        shift 1
-        is_dockr_up
-
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            node "$@"
-
-    # Run "NPM" Command within web container.
-    elif [ "$1" == "npm" ]; then
-        shift 1
-        is_dockr_up
-
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            npm "$@"
-
-    # Run "NPX" Command within web container.
-    elif [ "$1" == "npx" ]; then
-        shift 1
-        is_dockr_up
-
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            npx "$@"
-
-    # Run "YARN" Command within web container.
-    elif [ "$1" == "yarn" ]; then
-        shift 1
-        is_dockr_up
-
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            yarn "$@"
-
-    # Initiate a Bash session within web container.
-    elif [ "$1" == "shell" ] || [ "$1" == "bash" ]; then
-        shift 1
-        is_dockr_up
-
-        docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            bash
+    # Run Node, NPM, NPX, Yarn commands
+    elif [ -f "${DOCKR_BIN_DIR}/node/$1" ]; then
+        . "${DOCKR_BIN_DIR}/node/$1"
 
     # Display the DockR Version.
     elif [ "$1" == "--version" ] || [ "$1" == "-version" ] || [ "$1" == "-v" ] || [ "$1" == "--v" ]; then
-        shift 1
-
-        display_dockr_name
-        echo -e "A Local development environment for Laravel using Docker"
-        echo -e "Current Version : ${DOCKR_VERSION:-<unknown dev version>}"
+        . "${DOCKR_COMMON_BIN_DIR}/version"
 
     # Display Help For unknown commands.
     else

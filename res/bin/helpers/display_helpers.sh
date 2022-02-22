@@ -6,7 +6,7 @@
 dockr_is_down() {
     echo -e "${RED}No ${BOLD}${DOCKR_NAME} container is running from this Directory.${CLR}\n"
     echo -e "${BOLD}Please check the directory.${CLR} Or"
-    echo -e "${BOLD}You can run ${DOCKR_NAME} using ${YELLOW}\"dockr up\"${CLR}"
+    echo -e "${BOLD}Run ${DOCKR_NAME} using ${YELLOW}\"dockr up\"${CLR}"
 
     exit 1
 }

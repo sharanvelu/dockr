@@ -1,0 +1,10 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+is_dockr_up
+
+shift 1
+
+docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
+    npx $@

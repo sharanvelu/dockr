@@ -1,0 +1,68 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+# Import the specified Dump file to the provided DB in the respective DB_MODEL
+import_database() {
+    # Check if the required parameters are provided.
+    if [ "${DT_DATABASE_NAME}" == "" ] || [ "${DT_DUMP_FILE}" == "" ]; then
+        echo -e "${RED}Error :${CLR} Database Import statement requires two arguments : ${YELLOW}DB_NAME${CLR} and ${YELLOW}SQL_DUMP_FILE${CLR}"
+        display_help "${DT_DATABASE_MODEL}_import"
+        exit 1
+    fi
+
+    # Check if the provided sql_file_path contains any blank spaces to avoid error.
+    if echo "${DT_DUMP_FILE}" | grep -q "\ "; then
+        echo -e "${RED}Error :${CLR} Avoid blank spaces (\" \") in the file_path."
+        echo -e "Provided File Path : ${YELLOW}${DT_DUMP_FILE}${CLR}"
+
+        exit 1
+    fi
+
+    # Check if the specified file exists or not.
+    if [ ! -f "${DT_DUMP_FILE}" ]; then
+        echo -e "Specified dump file ${YELLOW}\"${DT_DUMP_FILE}\"${CLR} does not exists."
+        echo -e "Please check the file."
+
+        exit 1
+    fi
+
+    # Trim the host machine file_path to file_name to avoid "directory not found" issue inside the container.
+    DT_CONTAINER_DUMP_FILE_PATH="/opt/$(echo ${DT_DUMP_FILE} | sed 's/.*\///')"
+
+    # Copy the provided dump file to the container.
+    copy_dump_file_to_container
+
+    # Import the Dump file using Mysql Import Command
+    if [ "${DT_DATABASE_MODEL}" == "mysql" ]; then
+        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql \
+            bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root ${DT_DATABASE_NAME} < ${DT_CONTAINER_DUMP_FILE_PATH}"
+    fi
+
+    # Import the Dump file using Postgres Import Command
+    if [ "${DT_DATABASE_MODEL}" == "postgres" ]; then
+        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres \
+            bash -c "psql -U ${DOCKR_ASSET_USERNAME} -d ${DT_DATABASE_NAME} < ${DT_CONTAINER_DUMP_FILE_PATH}"
+    fi
+
+    # Delete the Dump file from the container
+    delete_dump_file_from_container
+}
+
+# Copy the provided dump file to the container.
+copy_dump_file_to_container() {
+    DT_DATABASE_CONTAINER_ID=$(docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps -q "${DT_DATABASE_MODEL}")
+    # Copy the Dump file into container
+    docker cp "${DT_DUMP_FILE}" ${DT_DATABASE_CONTAINER_ID}:${DT_CONTAINER_DUMP_FILE_PATH}
+}
+
+# Delete the Dump file from the container
+delete_dump_file_from_container() {
+    docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec ${DT_DATABASE_MODEL} \
+        bash -c "rm -rf ${DT_CONTAINER_DUMP_FILE_PATH}"
+}
+
+# Start a SSH bash session
+start_bash_session() {
+    docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec "${DT_DATABASE_MODEL}" bash
+}
