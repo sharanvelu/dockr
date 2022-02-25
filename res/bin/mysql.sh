@@ -54,6 +54,6 @@ elif [ $# == 0 ] || [ $# == 1 ]; then
 else
     shift 1
 
-    echo -e "Unknown option ${YELLOW}\"$@\"${CLR}"
+    echo -e "Unknown option ${CYAN}\"$@\"${CLR}"
     display_help mysql_query
 fi

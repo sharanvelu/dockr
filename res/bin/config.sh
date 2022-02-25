@@ -5,11 +5,55 @@
 # Include common scripts for down and stop command
 . "${DOCKR_COMMON_BIN_DIR}/config"
 
-if [ $2 == 'set' ]; then
-    set_config $3 $4
-fi
+# Check if the provided identifier is available to use.
+# If not, display error message and terminate.
+check_if_config_identifier_exists() {
+    EXISTING_CONFIG_IDENTIFIERS="mysql,postgres,redis"
+    if ! echo ${EXISTING_CONFIG_IDENTIFIERS} | grep -q -w "$1"; then
+        echo -e "\n${RED}Error :${CLR} Invalid Config identifier provided."
+        echo -e "Kindly use any of the available identifiers.\n"
+        echo -e "Currently available config identifiers : ${CYAN}'mysql'${CLR}, ${CYAN}'postgres'${CLR} and ${CYAN}'redis'${CLR}."
 
-if [ $2 == 'get' ]; then
-    get_config $3
-    echo $?
+        exit 1
+    fi
+}
+
+DT_CONFIG_ACTION=$2
+DT_CONFIG_IDENTIFIER=$3
+
+if [ "${DT_CONFIG_ACTION}" == 'enable' ]; then
+    check_if_config_identifier_exists "${DT_CONFIG_IDENTIFIER}"
+
+    set_config "${DT_CONFIG_IDENTIFIER}" 1
+    echo -e "Configuration for ${CYAN}'"${DT_CONFIG_IDENTIFIER}"'${CLR} is now ${GREEN}'enabled'${CLR}."
+
+elif [ "${DT_CONFIG_ACTION}" == 'disable' ]; then
+    check_if_config_identifier_exists "${DT_CONFIG_IDENTIFIER}"
+
+    set_config "${DT_CONFIG_IDENTIFIER}" 0
+    echo -e "Configuration for ${CYAN}'"${DT_CONFIG_IDENTIFIER}"'${CLR} is now ${RED}'disabled'${CLR}."
+
+elif [ "${DT_CONFIG_ACTION}" == '--get' ]; then
+    check_if_config_identifier_exists "${DT_CONFIG_IDENTIFIER}"
+
+    is_config_set "${DT_CONFIG_IDENTIFIER}"
+    if [ $? == 1 ]; then
+
+        get_config "${DT_CONFIG_IDENTIFIER}"
+        if [ $? == 1 ]; then
+            echo -e "Configuration for ${CYAN}'"${DT_CONFIG_IDENTIFIER}"'${CLR} is set to ${GREEN}'enabled'${CLR}."
+        else
+            echo -e "Configuration for ${CYAN}'"${DT_CONFIG_IDENTIFIER}"'${CLR} is set to ${RED}'disabled'${CLR}."
+        fi
+
+    else
+        echo -e "Configuration for ${CYAN}'"${DT_CONFIG_IDENTIFIER}"'${CLR} isn't set."
+        echo -e "This will be treated as ${GREEN}enabled${CLR} by default."
+    fi
+
+else
+    shift 1
+
+    echo -e "Unknown option provided : ${CYAN}'$@'${CLR}"
+    display_help "config"
 fi

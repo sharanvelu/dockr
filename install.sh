@@ -12,13 +12,18 @@
 ## Exit when an error occurs instead of continuing the rest.
 set -e
 
+# Font Styling and Colors
 CLR="\033[0m"
 RED="\033[38;5;196m"
-GREEN="\033[38;1;32m"
+GREEN="\033[38;3;32m"
 ORANGE="\033[38;5;202m"
 LAVENDER="\033[38;5;093m"
 PINK="\033[38;5;163m"
 BOLD="\033[1m"
+CYAN="\033[1;36m"
+
+# Process Indicator
+PROCESS="${CYAN}=>${CLR} "
 
 ## DockR Branch
 DOCKR_BRANCH="release"
@@ -36,15 +41,13 @@ DOCKR_FILE_CONFIG="${DOCKR_DIR_DATA}/config"
 
 # Display Process
 display_process() {
-    echo -e ""
-    echo -e "$*"
+    echo -e "\n${PROCESS}$*"
 }
 
 # Exit the Installation Process
 exiting() {
-    echo -e ""
-    echo -e "${RED}${*}${CLR}"
-    echo -e "Exiting the installation Process..."
+    echo -e "\n${RED}${*}${CLR}"
+    echo -e "${RED}=>${CLR} Exiting the installation Process..."
 
     exit 1
 }
@@ -219,24 +222,25 @@ print_dockr_success() {
       $(printf ${GREEN})
       $(printf ${LAVENDER})
       $(printf ${PINK})
+      $(printf ${CLR})
     "
 
-    printf '%s           ___ %s        %s      %s          %s_______ \n' $MULTI_COLORS
-    printf '%s          /  /%s ______ %s____  %s __   __  %s/  __  / \n' $MULTI_COLORS
-    printf '%s   ______/  /%s/  __  /%s/ __/ %s/  / /  / %s/  / / /  \n' $MULTI_COLORS
-    printf '%s  /  ___   /%s/ /  / /%s/ /   %s/  //_ /  %s/  /_/_/   \n' $MULTI_COLORS
-    printf '%s /  /__/  /%s/ /__/ /%s/ /__ %s/  /\  \  %s/  /\ \     \n' $MULTI_COLORS
-    printf '%s/________/%s/______/%s/____/%s/__/  \__\%s/__/  \_\    \n' $MULTI_COLORS
+    printf '     %s      ___ %s        %s      %s          %s_______  %s\n' $MULTI_COLORS
+    printf '    %s      /  /%s ______ %s____  %s __   __  %s/  __  / %s \n' $MULTI_COLORS
+    printf '   %s______/  /%s/  __  /%s/ __/ %s/  / /  / %s/  / / / %s  \n' $MULTI_COLORS
+    printf '  %s/  ___   /%s/ /  / /%s/ /   %s/  //_ /  %s/  /_/_/ %s   \n' $MULTI_COLORS
+    printf ' %s/  /__/  /%s/ /__/ /%s/ /__ %s/  /\  \  %s/  /\ \  %s    \n' $MULTI_COLORS
+    printf '%s/________/%s/______/%s/____/%s/__/  \__\%s/__/  \_\%s     \n' $MULTI_COLORS
 
     echo -e "${CLR}"
-    echo -e "                           By --${BOLD} SHARAN ${CLR}--"
+    echo -e "                           By --${BOLD} SHARAN ${CLR}--\n"
 
     if [ "$1" == "install" ]; then
-        display_process "...is now ${GREEN}successfully${CLR} installed!"
+        echo -e "\t ...is now ${GREEN}successfully${CLR} installed!"
     fi
 
     if [ "$1" == "update" ]; then
-        display_process "...is ${GREEN}successfully${CLR} updated!"
+        echo -e "\t\t...is ${GREEN}successfully${CLR} updated!"
     fi
 }
 

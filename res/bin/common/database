@@ -2,11 +2,14 @@
 
 ## DockR by Sharan
 
+# Source the Common Asset script
+. "${DOCKR_COMMON_BIN_DIR}/asset"
+
 # Import the specified Dump file to the provided DB in the respective DB_MODEL
 import_database() {
     # Check if the required parameters are provided.
     if [ "${DT_DATABASE_NAME}" == "" ] || [ "${DT_DUMP_FILE}" == "" ]; then
-        echo -e "${RED}Error :${CLR} Database Import statement requires two arguments : ${YELLOW}DB_NAME${CLR} and ${YELLOW}SQL_DUMP_FILE${CLR}"
+        echo -e "${RED}Error :${CLR} Database Import statement requires two arguments : ${CYAN}DB_NAME${CLR} and ${CYAN}SQL_DUMP_FILE${CLR}"
         display_help "${DT_DATABASE_MODEL}_import"
         exit 1
     fi
@@ -14,14 +17,14 @@ import_database() {
     # Check if the provided sql_file_path contains any blank spaces to avoid error.
     if echo "${DT_DUMP_FILE}" | grep -q "\ "; then
         echo -e "${RED}Error :${CLR} Avoid blank spaces (\" \") in the file_path."
-        echo -e "Provided File Path : ${YELLOW}${DT_DUMP_FILE}${CLR}"
+        echo -e "Provided File Path : ${CYAN}${DT_DUMP_FILE}${CLR}"
 
         exit 1
     fi
 
     # Check if the specified file exists or not.
     if [ ! -f "${DT_DUMP_FILE}" ]; then
-        echo -e "Specified dump file ${YELLOW}\"${DT_DUMP_FILE}\"${CLR} does not exists."
+        echo -e "Specified dump file ${CYAN}\"${DT_DUMP_FILE}\"${CLR} does not exists."
         echo -e "Please check the file."
 
         exit 1
@@ -65,4 +68,40 @@ delete_dump_file_from_container() {
 # Start a SSH bash session
 start_bash_session() {
     docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec "${DT_DATABASE_MODEL}" bash
+}
+
+# Create Project Database
+create_project_database() {
+    should_start_asset "${DB_CONNECTION}"
+    if [ $? == 1 ]; then
+        echo -e "Checking for database ${CYAN}${DB_DATABASE}${CLR} presence in ${DB_CONNECTION}."
+
+        # To prevent server error, give the containers a "3 sec interval" to boot up completely.
+        sleep 3
+
+        # Create DB with specified name if it is not present.
+        # If DB is "MYSQL"
+        if [ "${DB_CONNECTION}" == "mysql" ]; then
+            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"show databases;\" | grep -q -w ${DB_DATABASE}"; then
+                echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"create database ${DB_DATABASE}\" >> /dev/null"
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec mysql bash -c "MYSQL_PWD=${DOCKR_ASSET_PASSWORD} mysql -u root -e \"GRANT ALL PRIVILEGES ON *.* TO '${DOCKR_ASSET_USERNAME}'@'%'\" >> /dev/null"
+                echo -e "Database ${CYAN}${DB_DATABASE}${CLR} created successfully."
+            else
+                echo -e "Database ${CYAN}${DB_DATABASE}${CLR} already exists. Skipping..."
+            fi
+
+        # If DB is "POSTGRES"
+        elif [ "${DB_CONNECTION}" == "postgres" ] || [ "${DB_CONNECTION}" == "psql" ]; then
+            if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres bash -c "psql -U ${DOCKR_ASSET_USERNAME} -l | grep -q -w ${DB_DATABASE}"; then
+                echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
+                docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres bash -c "psql -U ${DOCKR_ASSET_USERNAME} -d ${DOCKR_ASSET_DEFAULT_DATABASE} -c \"create database ${DB_DATABASE}\" >> /dev/null"
+                echo -e "Database ${CYAN}${DB_DATABASE}${CLR} created successfully."
+            else
+                echo -e "Database ${CYAN}${DB_DATABASE}${CLR} already exists. Skipping..."
+            fi
+        fi
+
+        echo -e ""
+    fi
 }
