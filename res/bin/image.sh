@@ -18,22 +18,31 @@ DOCKR_IMAGE_LIST_PROJECT="docker image ls \
 
 # List all images
 if [ "$2" == "ls" ]; then
-    echo -e "${YELLOW}ASSET Images : ${CLR}"
+    echo -e "${CYAN}Asset Images : ${CLR}"
     ${DOCKR_IMAGE_LIST_ASSET}
 
     echo ""
-    echo -e "${YELLOW}Project Images : ${CLR}"
+    echo -e "${CYAN}Project Images : ${CLR}"
     ${DOCKR_IMAGE_LIST_PROJECT}
 
+# Prune all downloaded images.
 elif [ "$2" == "prune" ]; then
-    dockr down all -f >> /dev/null
+    echo -e "${RED}Warning :${CLR} This will remove all the downloaded images. This action cannot be undone.\n"
+    read -p "Are you sure? [y/n] : " -n 1 -r
+    echo -e "\n"
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${PROCESS}Destroying running containers..."
+        dockr down all -f >>/dev/null
 
-    if [ "$(${DOCKR_IMAGE_LIST_ALL} -q)" ]; then
-        docker image rm $(${DOCKR_IMAGE_LIST_ALL} -q) >> /dev/null
+        # Check if images exists for removing.
+        if [ "$(${DOCKR_IMAGE_LIST_ALL} -q)" ]; then
+            echo -e "${PROCESS}Deleting Images...\n"
+            docker image rm $(${DOCKR_IMAGE_LIST_ALL} -q) >>/dev/null
 
-        echo -e "All ${DOCKR_NAME} images are ${GREEN}pruned successfully${CLR}."
-    else
-        echo -e "${RED}No${CLR} ${DOCKR_NAME} images to prune."
+            echo -e "All ${DOCKR_NAME} images are ${GREEN}pruned successfully${CLR}."
+        else
+            echo -e "${RED}No${CLR} ${DOCKR_NAME} images to prune."
+        fi
     fi
 
 else

@@ -2,6 +2,7 @@
 
 ## DockR by Sharan
 
+# Construct List Item for Dockr help display.
 print_list_item() {
     COMMAND=$1
     shift 1
@@ -15,6 +16,7 @@ print_list_item() {
     fi
 }
 
+# Construct options for a command.
 print_options() {
     if [ ${#2} -lt 16 ]; then
         SECOND_SPACING="\t\t"
@@ -32,23 +34,27 @@ print_options() {
     printf "%s%s$SECOND_SPACING%s\n" "${SHORTHAND_PROP}" "$2" "$3"
 }
 
+# Construct and display example for a command.
 print_example() {
     printf "\t%s\n" "$@"
 }
 
+# Construct and display usage for a command.
 print_usage() {
     printf "\n%s\t: %s\n\n" "Usage" "$1"
 }
 
+# Construct and display note for a command.
 print_note() {
     echo -e "\nNote : $@"
 }
 
+# Display help for all commands.
 print_all() {
     if [ "${HELP_TYPE-:null}" == "help" ]; then
-        printf "\n%s\n\n" "A Local development environment for Laravel using Docker"
+        echo -e "\nA Local development environment for Laravel using Docker\n"
     else
-        echo -e "\n${DOCKR_NAME} : Command '${BOLD}$1${CLR}' is not available\n"
+        echo -e "\n${RED}Error :${CLR} Command '${BOLD}$1${CLR}' is not available\n"
     fi
 
     echo "--- ${DOCKR_NAME} Help ---"
@@ -92,21 +98,17 @@ fi
 if [ $# -gt 0 ]; then
     # Up
     if [ "$1" == "up" ]; then
-        print_usage "dockr up [options]"
+        print_usage "dockr up"
         echo -e "Create and Start containers\n"
-        echo "Options : "
-        print_options "-d" "--detach" "Detached mode: Run containers in the background"
-#        print_options "" "--detach" "Detached mode: Run containers in the background"
 
     # Down
     elif [ "$1" == "down" ]; then
         print_usage "dockr down [options]"
         echo -e "Stop and remove the containers\n"
         echo "Options : "
-        print_options "" "asset" "Stop and remove the project containers as well as the asset containers."
-        print_options "" "all" "Stop and remove all the containers by ${DOCKR_NAME}."
-        print_options "" "all -f" "Force remove all the containers by ${DOCKR_NAME} without stopping."
-        print_options "-v" "--volumes" "Remove volumes created for Asset containers."
+        print_options "" "asset" "Stop and remove the asset containers along with project containers."
+        print_options "" "all" "Stop and remove all the containers run by ${DOCKR_NAME}."
+        print_options "" "all -f" "Force remove all the containers run by ${DOCKR_NAME} without stopping."
 
     # Asset
     elif [ "$1" == "asset" ]; then
@@ -211,16 +213,22 @@ if [ $# -gt 0 ]; then
         print_usage "dockr status"
         echo -e "Prints the status of the Asset Containers and the project containers"
 
-    # Status
+    # PS
+    elif [ "$1" == "ps" ]; then
+        print_usage "dockr ps"
+        echo -e "Shorthand property for status command"
+        echo -e "Prints the status of the Asset Containers and the project containers"
+
+    # Mysql Import
     elif [ "$1" == "mysql_import" ]; then
         print_usage "dockr mysql import <db_name> <path_to_file.sql>"
         echo -e "Imports the specified <path_to_file.sql> from host machine to the specified <db_name>.\n"
         echo "Example : "
         print_example "dockr mysql import dockr_db /root/dockr/dockr_db_import.sql"
 
-        print_note "Don't use <path_to_file.sql> files with ${YELLOW}blank space \" \"${CLR}. If there is any blank space, please rename the file and try again."
+        print_note "Don't use <path_to_file.sql> files with ${CYAN}blank space \" \"${CLR}. If there is any blank space, please rename the file and try again."
 
-    # Status
+    # Mysql Query
     elif [ "$1" == "mysql_query" ]; then
         print_usage "dockr mysql <db_name> -q \"query statement\""
         echo -e "Executes the specified query in specified DB and prints the result.\n"
@@ -231,14 +239,14 @@ if [ $# -gt 0 ]; then
 
         print_note "Watch the ${BOLD}\"double quotes\"${CLR} around the query statement. You Must specify the double quotes(\")."
 
-    # Status
+    # Postgres Import
     elif [ "$1" == "postgres_import" ]; then
         print_usage "dockr postgres import <db_name> <path_to_file.sql>"
         echo -e "Imports the specified <path_to_file.sql> from host machine to the specified <db_name>.\n"
         echo "Example : "
         print_example "dockr postgres import dockr_db /root/dockr/dockr_db_import.sql"
 
-        print_note "Don't use <path_to_file.sql> files with ${YELLOW}blank space \" \"${CLR}. If there is any blank space, please rename the file and try again."
+        print_note "Don't use <path_to_file.sql> files with ${CYAN}blank space \" \"${CLR}. If there is any blank space, please rename the file and try again."
 
     else
         print_all $1

@@ -7,7 +7,9 @@ shift 1
 # Check if DockR is running
 is_dockr_up
 
-# Display Port information.
+# Display Dockr Name
 display_dockr_name
-echo -e "Published Port : ${YELLOW}${DOCKR_PORT:--}${CLR}"
+
+# Display Port information.
+echo -e "Published Port : ${CYAN}${DOCKR_PORT:--}${CLR}"
 echo -e "Published At : ${RED}${UNDERLINE}http://dockr:${DOCKR_PORT}${CLR}"
