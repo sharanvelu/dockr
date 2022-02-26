@@ -2,4 +2,4 @@
 
 ## DockR by Sharan
 
-. "${DOCKR_BIN_DIR}/postgres.sh"
+. "${DOCKR_BIN_DIR}/bash"

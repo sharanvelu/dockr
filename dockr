@@ -96,12 +96,12 @@ export DOCKER_COMPOSE_FILE
 
 if [ $# -gt 0 ]; then
     # Dynamic command execution using separate files.
-    if [ -f "${DOCKR_BIN_DIR}/$1.sh" ]; then
-        . "${DOCKR_BIN_DIR}/$1.sh"
+    if [ -f "${DOCKR_BIN_DIR}/$1" ]; then
+        . "${DOCKR_BIN_DIR}/$1"
 
     # Dynamic PHP command execution using separate files from Bin PHP directory.
-    elif [ -f "${DOCKR_BIN_DIR}/php/$1.sh" ]; then
-        . "${DOCKR_BIN_DIR}/php/$1.sh"
+    elif [ -f "${DOCKR_BIN_DIR}/php/$1" ]; then
+        . "${DOCKR_BIN_DIR}/php/$1"
 
     # Run Node, NPM, NPX, Yarn commands
     elif [ -f "${DOCKR_BIN_DIR}/node/$1" ]; then
@@ -118,5 +118,5 @@ if [ $# -gt 0 ]; then
 
 # Execute PS Command if just "dockr" is run.
 else
-    . "${DOCKR_BIN_DIR}/status.sh"
+    . "${DOCKR_BIN_DIR}/status"
 fi
