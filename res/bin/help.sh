@@ -75,11 +75,12 @@ print_all() {
     print_list_item shell Create a SSH session for the container
     print_list_item bash Create a SSH session for the container
     print_list_item phpunit Run \"vendor/bin/phpunit\" commands within the container
-    print_list_item mysql Start mysql session within the mysql asset container
-    print_list_item redis Start redis session within the redis asset container
-    print_list_item postgres Start postgres session within the postgres asset container
-    print_list_item image "Manage images from ${DOCKR_NAME} repository"
-    print_list_item status "Display the status of the asset container and the project containers"
+    print_list_item mysql Manage Mysql container
+    print_list_item postgres Manage Postgres container
+    print_list_item redis Manage Redis container
+    print_list_item image Manage images used for ${DOCKR_NAME}
+    print_list_item status Display the status of the asset container and the project containers
+    print_list_item ps Shorthand property for status command
 
     echo -e "\nRun '${BOLD}dockr help [COMMAND]${CLR}' for additional information on a command"
 }
@@ -217,7 +218,7 @@ if [ $# -gt 0 ]; then
         echo "Example : "
         print_example "dockr mysql import dockr_db /root/dockr/dockr_db_import.sql"
 
-        print_note "Don't use <path_to_file.sql> files with ${YELLOW}blank space \" \"${CLR}. If there is any blank space, rename the file and try again."
+        print_note "Don't use <path_to_file.sql> files with ${YELLOW}blank space \" \"${CLR}. If there is any blank space, please rename the file and try again."
 
     # Status
     elif [ "$1" == "mysql_query" ]; then
@@ -229,6 +230,15 @@ if [ $# -gt 0 ]; then
         print_example "dockr mysql test_database -q \"select * from users\""
 
         print_note "Watch the ${BOLD}\"double quotes\"${CLR} around the query statement. You Must specify the double quotes(\")."
+
+    # Status
+    elif [ "$1" == "postgres_import" ]; then
+        print_usage "dockr postgres import <db_name> <path_to_file.sql>"
+        echo -e "Imports the specified <path_to_file.sql> from host machine to the specified <db_name>.\n"
+        echo "Example : "
+        print_example "dockr postgres import dockr_db /root/dockr/dockr_db_import.sql"
+
+        print_note "Don't use <path_to_file.sql> files with ${YELLOW}blank space \" \"${CLR}. If there is any blank space, please rename the file and try again."
 
     else
         print_all $1

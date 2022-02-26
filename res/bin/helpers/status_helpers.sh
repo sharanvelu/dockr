@@ -2,15 +2,6 @@
 
 ## DockR by Sharan
 
-# Checks For the working of Docker Engine...
-is_docker_engine_up() {
-    if ! docker info >/dev/null 2>&1; then
-        echo -e "${BOLD}Docker is not running.${CLR}"
-
-        exit 1
-    fi
-}
-
 # Checks For DockR Running...
 is_dockr_up() {
     if docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps | grep -q web; then
