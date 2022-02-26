@@ -1,5 +1,5 @@
-<p style="text-align: center"><img style="height: 60px" src="https://docs.dockr.in/logo/half.png" alt="Logo Laravel Sail"></p>
-<p style="text-align: center">Local Development Environment for Laravel using Docker</p>
+<p align="center"><img style="height: 60px" src="https://docs.dockr.in/logo/half.png" alt="Logo Laravel Sail"></p>
+<p align="center">Local Development Environment for Laravel using Docker</p>
 
 ## Introduction
 
