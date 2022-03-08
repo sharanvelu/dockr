@@ -8,15 +8,26 @@
 # Source the common Database script
 . "${DOCKR_COMMON_BIN_DIR}/database"
 
+# Source the proxy script.
+. "${DOCKR_COMMON_BIN_DIR}/proxy"
+
 # Check Mandatory Environment variables
 check_required_project_env() {
-    # Check for Mandatory Env variables
+    # Check for Mandatory DOCKR_PORT Env variables
     if [ -z "${DOCKR_PORT}" ]; then
         echo -e "Required Parameter ${CYAN}\"DOCKR_PORT\"${CLR} is ${RED}missing${CLR} from ${CYAN}.env${CLR}"
 
         exit 1
+
+    # DockR port value should not be set to 80.
+    # As proxy containers will be listened on port 80.
+    elif [ "${DOCKR_PORT}" == 80 ]; then
+        echo -e "${CYAN}DOCKR_PORT${CLR} should not be set to ${CYAN}\`80\`${CLR}"
+
+        exit 1
     fi
-    export DOCKR_PORT=${DOCKR_PORT:-80}
+
+    export DOCKR_PORT
 }
 
 # Check for DockR Network
@@ -75,12 +86,22 @@ check_asset_container
 
 check_project_database_existence
 
+check_proxy_for_project
+
 if [ -n "${DOCKR_WORKER}" ]; then
     WORKER_SERVICE="worker"
 fi
 
+DT_SITE="http://${DOCKR_DOMAIN}"
+export DT_SITE
+
 docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" up -d web ${WORKER_SERVICE}
 
 if [ -n "${DOCKR_PORT}" ]; then
-    echo -e "\nYour Application should be running at ${RED}${UNDERLINE}http://dockr:${DOCKR_PORT}${CLR}"
+    DT_APP_RUNNING_AT="${RED}${UNDERLINE}http://dockr:${DOCKR_PORT}${CLR}"
+    if [ -n "${DOCKR_DOMAIN}" ]; then
+        DT_APP_RUNNING_AT="${RED}${UNDERLINE}${DT_SITE}${CLR} and ${RED}${UNDERLINE}http://dockr:${DOCKR_PORT}${CLR}"
+    fi
+
+    echo -e "\nYour Application should be running at ${DT_APP_RUNNING_AT}"
 fi

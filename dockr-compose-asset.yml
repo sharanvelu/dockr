@@ -24,6 +24,8 @@ services:
         labels:
             - "TYPE=asset"
             - "SERVICE=mysql"
+            - "PORT=3306"
+            - "SITE=-"
 
     postgres:
         image: postgres
@@ -42,6 +44,8 @@ services:
         labels:
             - "TYPE=asset"
             - "SERVICE=postgres"
+            - "PORT=5432"
+            - "SITE=-"
 
     redis:
         image: "redis:alpine"
@@ -59,6 +63,22 @@ services:
         labels:
             - "TYPE=asset"
             - "SERVICE=redis"
+            - "PORT=6379"
+            - "SITE=-"
+
+    proxy:
+        image: "sharanvelu/dockr-proxy:latest"
+        container_name: dockr_proxy
+        ports:
+            - "80:80"
+            - "443:443"
+        networks:
+            - "${DOCKR_NETWORK:-dockr}"
+        labels:
+            - "TYPE=asset"
+            - "SERVICE=proxy"
+            - "PORT=80"
+            - "SITE=http://dockr"
 
 networks:
     dockr:
