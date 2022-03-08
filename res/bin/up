@@ -92,14 +92,15 @@ if [ -n "${DOCKR_WORKER}" ]; then
     WORKER_SERVICE="worker"
 fi
 
-DT_SITE="http://${DOCKR_DOMAIN}"
+# Exporting the DT_SITE var here because it is used in dockr-compose-file.yml
+DT_SITE="http://${DOCKR_SITE}"
 export DT_SITE
 
 docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" up -d web ${WORKER_SERVICE}
 
 if [ -n "${DOCKR_PORT}" ]; then
     DT_APP_RUNNING_AT="${RED}${UNDERLINE}http://dockr:${DOCKR_PORT}${CLR}"
-    if [ -n "${DOCKR_DOMAIN}" ]; then
+    if [ -n "${DOCKR_SITE}" ]; then
         DT_APP_RUNNING_AT="${RED}${UNDERLINE}${DT_SITE}${CLR} and ${RED}${UNDERLINE}http://dockr:${DOCKR_PORT}${CLR}"
     fi
 
