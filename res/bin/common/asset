@@ -39,6 +39,10 @@ start_asset_containers() {
     DT_START_POSTGRES=""
     DT_START_REDIS=""
 
+    # For now proxy container will start by default.
+    # Later this will be added to config.
+    DT_START_PROXY="proxy"
+
     # Check Mysql config data.
     should_start_asset mysql
     if [ $? == 1 ]; then
@@ -58,9 +62,9 @@ start_asset_containers() {
     fi
 
     # Check if any of the containers should be started. If there is no containers to start then
-    if [ "${DT_START_MYSQL}" != "" ] || [ "${DT_START_POSTGRES}" != "" ] || [ "${DT_START_REDIS}" != "" ]; then
+    if [ "${DT_START_PROXY}" != "" ] || [ "${DT_START_MYSQL}" != "" ] || [ "${DT_START_POSTGRES}" != "" ] || [ "${DT_START_REDIS}" != "" ]; then
         echo -e "Starting asset containers..."
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" up -d ${DT_START_MYSQL} ${DT_START_POSTGRES} ${DT_START_REDIS}
+        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" up -d ${DT_START_PROXY} ${DT_START_MYSQL} ${DT_START_POSTGRES} ${DT_START_REDIS}
         echo -e "Asset containers ${GREEN}started${CLR} successfully."
         if [ "${COMMAND_ORIGIN}" == "up" ]; then
             echo ""

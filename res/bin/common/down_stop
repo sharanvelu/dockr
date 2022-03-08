@@ -17,7 +17,7 @@ terminate_all() {
 
             # Stops the container before removing..
             docker stop ${PS_RESULTS} >> /dev/null
-            echo -e "All containers ${RED}stopped${CLR} successfully.\n"
+            echo -e "All containers ${RED}stopped${CLR} successfully."
 
             # Remove the container if it was down command.
             if [ "${STOP_TYPE}" == "down" ]; then

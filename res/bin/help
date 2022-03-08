@@ -60,33 +60,40 @@ print_all() {
     echo "--- ${DOCKR_NAME} Help ---"
     print_usage "dockr help [COMMAND]"
 
-    print_list_item up Create and Start containers
-    print_list_item down Stop the container and remove the container
-    print_list_item stop Stop the container without removing it
-    print_list_item asset Start or Stop the asset containers
-    print_list_item php Execute php commands within the container
-    print_list_item composer Execute Composer commands within the container
-    print_list_item bin Execute binary \(vendor/bin/\) commands within the container
-    print_list_item artisan Run artisan commands
-    print_list_item art Run artisan commands. Shorthand for \"artisan\" command
-    print_list_item test Run \"php artisan test\" commands within the container
-    print_list_item tinker Creates a tinker session
-    print_list_item migrate Run migration within the contaner
-    print_list_item seed Run seeder within the container
-    print_list_item make Run \"php artisan make\" commands within the container
-    print_list_item queue Start the queue worker
-    print_list_item node Execute node commands
-    print_list_item npm Execute npm commands
-    print_list_item yarn Execute yarn commands
-    print_list_item shell Create a SSH session for the container
-    print_list_item bash Create a SSH session for the container
-    print_list_item phpunit Run \"vendor/bin/phpunit\" commands within the container
-    print_list_item mysql Manage Mysql container
-    print_list_item postgres Manage Postgres container
-    print_list_item redis Manage Redis container
-    print_list_item image Manage images used for ${DOCKR_NAME}
-    print_list_item status Display the status of the asset container and the project containers
-    print_list_item ps Shorthand property for status command
+    echo -e "${CYAN}Management Commands : ${CLR}"
+    print_list_item asset "Start or Stop the asset containers"
+    print_list_item bash "Starts an SSH session for the project container"
+    print_list_item config "Manage the configuration values for the ${DOCKR_NAME}"
+    print_list_item down "Stop the container and remove the container"
+    print_list_item help "Display help."
+    print_list_item image "Manage images used for ${DOCKR_NAME}"
+    print_list_item mysql "Manage Mysql container for ${DOCKR_NAME}"
+    print_list_item port "Display the Port in which the current project is served"
+    print_list_item postgres "Manage Postgres container for ${DOCKR_NAME}"
+    print_list_item psql "Manage Postgres container for ${DOCKR_NAME}. Same as \`postgres\` command"
+    print_list_item ps "Shorthand for \`status\` command"
+    print_list_item redis "Manage Redis container for ${DOCKR_NAME}"
+    print_list_item shell "Starts an SSH session for the project container. Same as \`bash\` command"
+    print_list_item status "Display the status of the ${DOCKR_NAME} containers"
+    print_list_item stop "Stop the container without removing it"
+    print_list_item up "Create and Start containers"
+
+    echo -e "\n${CYAN}PHP / Laravel Commands : ${CLR}"
+    print_list_item art "Run artisan commands. Shorthand for \`artisan\` command"
+    print_list_item artisan "Run artisan commands"
+    print_list_item bin "Execute binary (vendor/bin/*) commands within the container"
+    print_list_item composer "Execute Composer commands within the container"
+    print_list_item make "Run \`php artisan make\` commands within the container"
+    print_list_item migrate "Run migration within the container"
+    print_list_item node "Execute node commands"
+    print_list_item npm "Execute npm commands"
+    print_list_item php "Execute php commands within the container"
+    print_list_item phpunit "Run \"vendor/bin/phpunit\" commands within the container"
+    print_list_item queue "Start the queue service"
+    print_list_item seed "Run seeder within the container"
+    print_list_item test "Run \`php artisan test\` commands within the container"
+    print_list_item tinker "Starts a tinker session"
+    print_list_item yarn "Execute yarn commands"
 
     echo -e "\nRun '${BOLD}dockr help [COMMAND]${CLR}' for additional information on a command"
 }
@@ -99,25 +106,161 @@ if [ $# -gt 0 ]; then
     # Up
     if [ "$1" == "up" ]; then
         print_usage "dockr up"
-        echo -e "Create and Start containers\n"
+        echo -e "Create and Start containers"
 
     # Down
     elif [ "$1" == "down" ]; then
         print_usage "dockr down [options]"
-        echo -e "Stop and remove the containers\n"
+        echo -e "Stops and removes the containers\n"
         echo "Options : "
         print_options "" "asset" "Stop and remove the asset containers along with project containers."
         print_options "" "all" "Stop and remove all the containers run by ${DOCKR_NAME}."
         print_options "" "all -f" "Force remove all the containers run by ${DOCKR_NAME} without stopping."
 
+    # Down
+    elif [ "$1" == "stop" ]; then
+        print_usage "dockr stop [options]"
+        echo -e "Stops the containers without removing\n"
+        echo "Options : "
+        print_options "" "asset" "Stops the asset containers along with project containers."
+        print_options "" "all" "Stops all the containers run by ${DOCKR_NAME}."
+
     # Asset
     elif [ "$1" == "asset" ]; then
         print_usage "dockr asset [options]"
-        echo -e "Control the asset containers\n"
+        echo -e "Manages the asset containers based on the config set.\n"
         echo "Options : "
-        print_options "" "up" "Starts the asset containers in detached mode."
+        print_options "" "up" "Starts the asset containers."
         print_options "" "stop" "Stops the asset containers without removing them."
-        print_options "" "down" "Stops and remove the asset containers."
+        print_options "" "down" "Stops and removes the asset containers."
+
+    # Config
+    elif [ "$1" == "config" ]; then
+        print_usage "dockr config [options]"
+        echo -e "Manages the configurations value for ${DOCKR_NAME} Asset.\n"
+        echo "Options : "
+        print_options "" "enable <asset>" "Enable the configuration of specified asset."
+        print_options "" "disable <asset>" "Disable the configuration of specified asset."
+        print_options "" "--get <asset>" "Get the status of the specified asset configuration."
+        echo -e "\nExample : "
+        print_example "dockr config enable mysql"
+        print_example "dockr config disable postgres"
+        print_example "dockr config --get redis"
+        print_note "Currently \`mysql\`, \`postgres\` and \`redis\` are the asset available for configurations."
+
+    # Shell
+    elif [ "$1" == "shell" ]; then
+        print_usage "dockr shell"
+        echo -e "Starts an SSH session for the project container. Same as \`bash\` command"
+
+    # Bash
+    elif [ "$1" == "bash" ]; then
+        print_usage "dockr bash"
+        echo -e "Starts an SSH session for the project container"
+
+    # MySQL
+    elif [ "$1" == "mysql" ]; then
+        print_usage "dockr mysql [options]"
+        echo -e "Manages MySQL container for ${DOCKR_NAME}.\n"
+        echo "Options : "
+        print_options "" "<db_name>" "Login to MySQL and starts using the specified \`DB\`"
+        print_options "" "bash" "Starts the bash session of the mysql container"
+        print_options "" "import" "Import the specified dump file into the specified \`DB\`"
+        print_options "" "-q" "Runs a query and display the result"
+        print_options "" "<db> -q" "Runs a query using the specified DB and display the result"
+
+    # Mysql Import
+    elif [ "$1" == "mysql_import" ]; then
+        print_usage "dockr mysql import <db_name> <path_to_file.sql>"
+        echo -e "Imports the specified <path_to_file.sql> from host machine to the specified <db_name>.\n"
+        echo "Example : "
+        print_example "dockr mysql import dockr_db /root/dockr/dockr_db_import.sql"
+
+        print_note "Don't use <path_to_file.sql> files with ${CYAN}blank space \" \"${CLR}. If there is any blank space, please rename the file and try again."
+
+    # Mysql Query
+    elif [ "$1" == "mysql_query" ]; then
+        print_usage "dockr mysql <db_name:optional> -q \"query statement\""
+        echo -e "Executes the specified query in specified DB and prints the result.\n"
+        echo "Example : "
+        print_example "dockr mysql test_db -q \"select * from users\""
+        print_example "dockr mysql test_database -q \"select * from users\""
+        print_example "dockr mysql -q \"create database test_database\""
+        print_example "dockr mysql -q \"drop database test_database\""
+
+        print_note "Watch the ${BOLD}\"double quotes\"${CLR} around the query statement. You Must specify the double quotes(\")."
+
+    # Postgres
+    elif [ "$1" == "postgres" ]; then
+        print_usage "dockr postgres [options]"
+        echo -e "Manages Postgres container for ${DOCKR_NAME}.\n"
+        echo "Options : "
+        print_options "" "<db_name>" "Login to Postgres and starts using the specified \`DB\`"
+        print_options "" "bash" "Starts the bash session of the postgres container"
+        print_options "" "import" "Import the specified dump file into the specified \`DB\`"
+        print_options "" "-q" "Runs a query and display the result"
+        print_options "" "<db> -q" "Runs a query using the specified DB and display the result"
+
+    # Postgres Import
+    elif [ "$1" == "postgres_import" ]; then
+        print_usage "dockr postgres import <db_name> <path_to_file.sql>"
+        echo -e "Imports the specified <path_to_file.sql> from host machine to the specified <db_name>.\n"
+        echo "Example : "
+        print_example "dockr postgres import dockr_db /root/dockr/dockr_db_import.sql"
+
+        print_note "Don't use <path_to_file.sql> files with ${CYAN}blank space \" \"${CLR}. If there is any blank space, please rename the file and try again."
+
+    # Postgres Query
+    elif [ "$1" == "postgres_query" ]; then
+        print_usage "dockr postgres <db_name:optional> -q \"query statement\""
+        echo -e "Executes the specified query in specified DB and prints the result.\n"
+        echo "Example : "
+        print_example "dockr postgres test_db -q \"select * from users\""
+        print_example "dockr postgres test_database -q \"select * from users\""
+        print_example "dockr postgres -q \"create database test_database\""
+        print_example "dockr postgres -q \"drop database test_database\""
+
+        print_note "Watch the ${BOLD}\"double quotes\"${CLR} around the query statement. You Must specify the double quotes(\")."
+
+    # Psql
+    elif [ "$1" == "psql" ]; then
+        print_usage "dockr psql [options]"
+        echo -e "Manages Postgres container for ${DOCKR_NAME}.\n"
+        echo "Options : "
+        print_options "" "<db_name>" "Login to Postgres and starts using the specified \`DB\`"
+        print_options "" "bash" "Starts the bash session of the psql container"
+        print_options "" "import" "Import the specified dump file into the specified \`DB\`"
+        print_options "" "-q" "Runs a query and display the result"
+        print_options "" "<db> -q" "Runs a query using the specified DB and display the result"
+
+    # PHP
+    elif [ "$1" == "redis" ]; then
+        print_usage "dockr redis"
+        echo -e "Manages Redis Asset container."
+
+    # Image
+    elif [ "$1" == "image" ]; then
+        print_usage "dockr image [option]"
+        echo -e "Manage images from ${DOCKR_NAME}\n"
+        echo "Options : "
+        print_options "" "ls" "Display the list of downloaded ${DOCKR_NAME} images"
+        print_options "" "prune" "Destroys every downloaded ${DOCKR_NAME} images"
+
+    # Status
+    elif [ "$1" == "status" ]; then
+        print_usage "dockr status"
+        echo -e "Prints the status of the Asset Containers and the project containers"
+
+    # PS
+    elif [ "$1" == "ps" ]; then
+        print_usage "dockr ps"
+        echo -e "Shorthand property for \`status\` command"
+        echo -e "Prints the status of the Asset Containers and the project containers"
+
+    # Port
+    elif [ "$1" == "port" ]; then
+        print_usage "dockr port"
+        echo -e "Display the Port and URL in which the current project is served"
 
     # PHP
     elif [ "$1" == "php" ]; then
@@ -131,7 +274,7 @@ if [ $# -gt 0 ]; then
         echo "Example : "
         print_example "dockr composer install"
         print_example "dockr composer update"
-        print_example "dockr composer require package_name"
+        print_example "dockr composer require <package_name>"
 
     # Bin
     elif [ "$1" == "bin" ]; then
@@ -182,8 +325,7 @@ if [ $# -gt 0 ]; then
         echo "Options : "
         print_options "" "seed ClassName" "Runs 'php artisan db:seed --class=ClassName' command"
 
-        echo ""
-        echo "Example : "
+        echo -e "\nExample : "
         print_example "dockr seed"
         print_example "dockr seed UserSeeder"
 
@@ -200,53 +342,36 @@ if [ $# -gt 0 ]; then
 
         print_note "All default make commands will work this way."
 
-    # Image
-    elif [ "$1" == "image" ]; then
-        print_usage "dockr image [option]"
-        echo -e "Manage images from ${DOCKR_NAME}\n"
-        echo "Options : "
-        print_options "" "ls" "Display the list of downloaded ${DOCKR_NAME} images"
-        print_options "" "prune" "Destroys every downloaded ${DOCKR_NAME} images"
+    # Queue
+    elif [ "$1" == "queue" ]; then
+        print_usage "dockr queue [command]"
+        echo -e "Runs the Queue service for the project container.\n"
 
-    # Status
-    elif [ "$1" == "status" ]; then
-        print_usage "dockr status"
-        echo -e "Prints the status of the Asset Containers and the project containers"
-
-    # PS
-    elif [ "$1" == "ps" ]; then
-        print_usage "dockr ps"
-        echo -e "Shorthand property for status command"
-        echo -e "Prints the status of the Asset Containers and the project containers"
-
-    # Mysql Import
-    elif [ "$1" == "mysql_import" ]; then
-        print_usage "dockr mysql import <db_name> <path_to_file.sql>"
-        echo -e "Imports the specified <path_to_file.sql> from host machine to the specified <db_name>.\n"
         echo "Example : "
-        print_example "dockr mysql import dockr_db /root/dockr/dockr_db_import.sql"
+        print_example "dockr queue work"
+        print_example "dockr queue listen"
 
-        print_note "Don't use <path_to_file.sql> files with ${CYAN}blank space \" \"${CLR}. If there is any blank space, please rename the file and try again."
+        print_note "By default ${CYAN}\`dockr queue\`${CLR} will run \`queue:listen\`."
 
-    # Mysql Query
-    elif [ "$1" == "mysql_query" ]; then
-        print_usage "dockr mysql <db_name> -q \"query statement\""
-        echo -e "Executes the specified query in specified DB and prints the result.\n"
-        echo "Example : "
-        print_example "dockr mysql test_db -q \"select * from users\""
-        print_example "dockr mysql test_db -q \"create database test_database\""
-        print_example "dockr mysql test_database -q \"select * from users\""
+    # Node
+    elif [ "$1" == "node" ]; then
+        print_usage "dockr node [command]"
+        printf "Runs the node command within the project container."
 
-        print_note "Watch the ${BOLD}\"double quotes\"${CLR} around the query statement. You Must specify the double quotes(\")."
+    # NPM
+    elif [ "$1" == "npm" ]; then
+        print_usage "dockr npm [command]"
+        printf "Runs the npm command within the project container."
 
-    # Postgres Import
-    elif [ "$1" == "postgres_import" ]; then
-        print_usage "dockr postgres import <db_name> <path_to_file.sql>"
-        echo -e "Imports the specified <path_to_file.sql> from host machine to the specified <db_name>.\n"
-        echo "Example : "
-        print_example "dockr postgres import dockr_db /root/dockr/dockr_db_import.sql"
+    # Yarn
+    elif [ "$1" == "yarn" ]; then
+        print_usage "dockr yarn [command]"
+        printf "Runs the yarn command within the project container."
 
-        print_note "Don't use <path_to_file.sql> files with ${CYAN}blank space \" \"${CLR}. If there is any blank space, please rename the file and try again."
+    # PHPUnit
+    elif [ "$1" == "phpunit" ]; then
+        print_usage "dockr phpunit [command]"
+        printf "Runs the phpunit command within the project container."
 
     else
         print_all $1

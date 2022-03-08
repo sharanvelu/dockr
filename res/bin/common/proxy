@@ -1,0 +1,37 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+# Check the domain name set for proxy.
+check_proxy_for_project() {
+    if [ -n "${DOCKR_SITE}" ] && [ "${DOCKR_SITE}" != "" ]; then
+        is_dockr_asset_up proxy
+
+        check_site_in_hosts
+        check_site_in_proxy_container
+    fi
+}
+
+# Check if the Site is set in /etc/hosts.
+check_site_in_hosts() {
+    # DockR will add the site in the /etc/hosts file in the future.
+    if ! grep -q -w ${DOCKR_SITE} /etc/hosts; then
+        echo -e "Specified site ${CYAN}${DOCKR_SITE}${CLR} is not present in the ${CYAN}/etc/hosts${CLR} file."
+        echo -e "Please add the site to ${BOLD}/etc/hosts${CLR} file \n"
+
+        # exit 1
+    fi
+}
+
+# Check site presence in the Proxy container
+check_site_in_proxy_container() {
+     if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec proxy bash -c "ls /etc/nginx/sites-enabled | grep -q -w ${DOCKR_SITE}"; then
+         add_site_to_proxy_container
+     fi
+}
+
+# Add site to proxy container for forwarding request to respective containers..
+add_site_to_proxy_container() {
+    DT_PROXY_SITE="http://host.docker.internal:${DOCKR_PORT}"
+    docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec proxy bash -c "add-listener ${DOCKR_SITE} ${DT_PROXY_SITE} >> /dev/null"
+}
