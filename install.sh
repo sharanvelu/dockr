@@ -26,7 +26,7 @@ CYAN="\033[1;36m"
 PROCESS="${CYAN}=>${CLR} "
 
 ## DockR Branch
-DOCKR_BRANCH="release"
+DOCKR_BRANCH="${DOCKR_BRANCH:-release}"
 
 ## DockR Name
 DOCKR_NAME="DockR"
