@@ -68,7 +68,6 @@ print_all() {
     print_list_item help "Display help."
     print_list_item image "Manage images used for ${DOCKR_NAME}"
     print_list_item mysql "Manage Mysql container for ${DOCKR_NAME}"
-    print_list_item port "Display the Port in which the current project is served"
     print_list_item postgres "Manage Postgres container for ${DOCKR_NAME}"
     print_list_item psql "Manage Postgres container for ${DOCKR_NAME}. Same as \`postgres\` command"
     print_list_item ps "Shorthand for \`status\` command"
@@ -256,11 +255,6 @@ if [ $# -gt 0 ]; then
         print_usage "dockr ps"
         echo -e "Shorthand property for \`status\` command"
         echo -e "Prints the status of the Asset Containers and the project containers"
-
-    # Port
-    elif [ "$1" == "port" ]; then
-        print_usage "dockr port"
-        echo -e "Display the Port and URL in which the current project is served"
 
     # PHP
     elif [ "$1" == "php" ]; then

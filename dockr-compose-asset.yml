@@ -24,7 +24,6 @@ services:
         labels:
             - "TYPE=asset"
             - "SERVICE=mysql"
-            - "PORT=3306"
             - "SITE=-"
 
     postgres:
@@ -44,7 +43,6 @@ services:
         labels:
             - "TYPE=asset"
             - "SERVICE=postgres"
-            - "PORT=5432"
             - "SITE=-"
 
     redis:
@@ -63,7 +61,6 @@ services:
         labels:
             - "TYPE=asset"
             - "SERVICE=redis"
-            - "PORT=6379"
             - "SITE=-"
 
     proxy:
@@ -77,7 +74,6 @@ services:
         labels:
             - "TYPE=asset"
             - "SERVICE=proxy"
-            - "PORT=80"
             - "SITE=http://dockr"
 
 networks:
