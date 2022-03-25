@@ -21,7 +21,8 @@ fi
 DOCKR_NAME="DockR"
 DOCKR_VERSION="1.3"
 DOCKR_NETWORK="dockr"
-DOCKR_HOME_DIR="${HOME}/dockr"
+DOCKR_REALPATH=$(realpath $0)
+DOCKR_HOME_DIR=$(dirname $DOCKR_REALPATH)
 DOCKR_DATA_DIR="${HOME}/.dockr"
 DOCKR_BIN_DIR="${DOCKR_HOME_DIR}/res/bin"
 DOCKR_COMPOSE_ASSET="${DOCKR_HOME_DIR}/dockr-compose-asset.yml"

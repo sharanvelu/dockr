@@ -51,9 +51,23 @@ elif [ "${DT_CONFIG_ACTION}" == '--get' ]; then
         echo -e "This will be treated as ${GREEN}enabled${CLR} by default."
     fi
 
+elif [ "${DT_CONFIG_ACTION}" == 'list' ]; then
+    echo -e "Asset configurations are set as follows.\n"
+
+    for DT_ASSET in mysql postgres redis
+    do
+        get_config "${DT_ASSET}"
+        if [ $? == 1 ]; then
+            echo -e "${CYAN}"${DT_ASSET}"${CLR}   \t => \t ${GREEN}enabled${CLR}"
+        else
+            echo -e "${CYAN}"${DT_ASSET}"${CLR}   \t => \t ${RED}disabled${CLR}"
+        fi
+    done
+
+
 else
     shift 1
 
-    echo -e "Unknown option provided : ${CYAN}'$@'${CLR}"
+    echo -e "Invalid option provided : ${CYAN}'$@'${CLR}"
     display_help "config"
 fi
