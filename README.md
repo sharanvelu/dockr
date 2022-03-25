@@ -28,7 +28,7 @@ sudo bash -c "$(curl -fsSL install.dockr.in)"
 
 ### Usage
 
-Setup `DOCKR_PORT` and `DOCKR_PHP_VERSION` in your projects .env file.
+Setup `DOCKR_SITE` and `DOCKR_PHP_VERSION` in your projects .env file.
 
 Starting your App :
 

@@ -2,7 +2,7 @@
 
 ## DockR by Sharan
 
-PS_FORMAT="table {{.ID}}\t{{.Names}}\t{{.Label \"TYPE\"}}\t{{.Label \"SERVICE\"}}\t{{.Label \"PORT\"}}\t{{.Label \"SITE\"}}\t{{title .State}}\t{{.Status}}"
+PS_FORMAT="table {{.ID}}\t{{.Names}}\t{{.Label \"TYPE\"}}\t{{.Label \"SERVICE\"}}\t{{.Label \"SITE\"}}\t{{title .State}}\t{{.Status}}"
 
 echo ""
 docker ps -f "network=${DOCKR_NETWORK}" --format "${PS_FORMAT}" -a
