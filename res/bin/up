@@ -11,6 +11,15 @@
 # Source the proxy script.
 . "${DOCKR_COMMON_BIN_DIR}/proxy"
 
+# Checks and Prints any info Provided from Server
+print_info_from_server() {
+    DT_RESPONSE="$(curl -s https://info.dockr.in/cli)"
+    if [ ! "${DT_RESPONSE}" == "" ]; then
+        echo -e "Info From ${CYAN}DockR${CLR} :"
+        echo -e "${DT_RESPONSE}\n"
+    fi
+}
+
 # Check Mandatory Environment variables
 check_required_project_env() {
     # Check for Mandatory DOCKR_PORT Env variables
@@ -53,11 +62,15 @@ check_dockr_composer_cache_volume() {
 # Manage Asset Containers (Mysql, Postgres, Redis, ...)
 check_asset_container() {
     if [ -n "${DOCKR_SKIP_ASSET}" ]; then
-        echo -e "${CYAN}DOCKR_SKIP_ASSET${CLR} is provided. Skipping Asset containers and DB check.\n"
+        echo -e "${CYAN}DOCKR_SKIP_ASSET${CLR} is provided, Skipping Asset containers and DB check.\n"
         if [ -n "${DOCKR_OVERRIDE_ASSET_CONFIG}" ]; then
-            echo -e "${RED}Warning :${CLR} Both ${CYAN}'DOCKR_SKIP_ASSET'${CLR} and ${CYAN}'DOCKR_OVERRIDE_ASSET_CONFIG'${CLR} are given."
-            echo -e "${CYAN}'DOCKR_OVERRIDE_ASSET_CONFIG'${CLR} will not be taken into consideration.\n"
+            echo -e "${RED}Warning :${CLR} Both ${CYAN}DOCKR_SKIP_ASSET${CLR} and ${CYAN}DOCKR_OVERRIDE_ASSET_CONFIG${CLR} are given."
+            echo -e "${CYAN}DOCKR_OVERRIDE_ASSET_CONFIG${CLR} will not be taken into consideration.\n"
         fi
+
+        echo -e "${PROCESS}Starting Proxy container..."
+        dt_start_asset proxy
+        echo -e "Proxy container ${GREEN}started${CLR} successfully.\n"
     else
         start_asset_containers
     fi
@@ -67,7 +80,7 @@ check_asset_container() {
 check_project_database_existence() {
     if [ -n "${DOCKR_SKIP_ASSET}" ] || [ -n "${DOCKR_SKIP_DB_CHECK}" ]; then
         if [ -z "${DOCKR_SKIP_ASSET}" ] && [ -n "${DOCKR_SKIP_DB_CHECK}" ]; then
-            echo -e "${CYAN}DOCKR_SKIP_DB_CHECK${CLR} is provided. Skipping DB check.\n"
+            echo -e "${CYAN}DOCKR_SKIP_DB_CHECK${CLR} is provided, Skipping DB check.\n"
         fi
     else
         create_project_database
@@ -75,6 +88,8 @@ check_project_database_existence() {
 }
 
 set +e
+
+print_info_from_server
 
 check_required_project_env
 
@@ -96,7 +111,7 @@ fi
 DT_SITE="http://${DOCKR_SITE}"
 export DT_SITE
 
-docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" up -d web ${WORKER_SERVICE}
+docker-compose -f "${DOCKR_COMPOSE_FILE}" -p "${PROJECT_NAME}" up -d web ${WORKER_SERVICE}
 
 if [ -n "${DOCKR_PORT}" ]; then
     DT_APP_RUNNING_AT="${RED}${UNDERLINE}http://dockr:${DOCKR_PORT}${CLR}"

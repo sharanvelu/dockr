@@ -10,6 +10,11 @@ COMMAND_ORIGIN=$1
 
 # Check if the provided asset container should start with respect to config, overrides and current container status.
 should_start_asset() {
+    # Check if SKIP_ASSET env is set
+    if [ -n "${DOCKR_SKIP_ASSET}" ]; then
+        return 0
+    fi
+
     # Check if the configs are set to start the given asset container.
     get_config $1
     if [ $? == 1 ]; then
@@ -63,8 +68,8 @@ start_asset_containers() {
 
     # Check if any of the containers should be started. If there is no containers to start then
     if [ "${DT_START_PROXY}" != "" ] || [ "${DT_START_MYSQL}" != "" ] || [ "${DT_START_POSTGRES}" != "" ] || [ "${DT_START_REDIS}" != "" ]; then
-        echo -e "Starting asset containers..."
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" up -d ${DT_START_PROXY} ${DT_START_MYSQL} ${DT_START_POSTGRES} ${DT_START_REDIS}
+        echo -e "${PROCESS}Starting asset containers..."
+        dt_start_asset ${DT_START_PROXY} ${DT_START_MYSQL} ${DT_START_POSTGRES} ${DT_START_REDIS}
         echo -e "Asset containers ${GREEN}started${CLR} successfully."
         if [ "${COMMAND_ORIGIN}" == "up" ]; then
             echo ""
@@ -76,4 +81,8 @@ start_asset_containers() {
     fi
 }
 
-
+# Start the asset containers specified as the params
+dt_start_asset()
+{
+    docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" up -d $@
+}

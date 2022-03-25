@@ -32,6 +32,10 @@ check_site_in_proxy_container() {
 
 # Add site to proxy container for forwarding request to respective containers..
 add_site_to_proxy_container() {
+    echo -e "${PROCESS}Setting up proxy...\n"
+
     DT_PROXY_SITE="http://host.docker.internal:${DOCKR_PORT}"
     docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec proxy bash -c "add-listener ${DOCKR_SITE} ${DT_PROXY_SITE} >> /dev/null"
+
+    sleep 2
 }

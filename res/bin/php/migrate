@@ -14,5 +14,5 @@ if [ $# -gt 0 ]; then
 fi
 
 # Run migration command within the container.
-docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
+docker-compose -f "${DOCKR_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
     php artisan ${MIGRATION_COMMAND}
