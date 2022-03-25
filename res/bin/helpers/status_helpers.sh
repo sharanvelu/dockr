@@ -4,9 +4,9 @@
 
 # Checks For DockR Running...
 is_dockr_up() {
-    if docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps | grep -q web; then
+    if docker-compose -f "${DOCKR_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps | grep -q web; then
         # Check if there is exited web containers
-        EXITED_STATE="$(docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps | grep web | grep exited)"
+        EXITED_STATE="$(docker-compose -f "${DOCKR_COMPOSE_FILE}" -p "${PROJECT_NAME}" ps | grep web | grep exited)"
         if [ -n "${EXITED_STATE}" ]; then
             dockr_container_is_stopped
         fi

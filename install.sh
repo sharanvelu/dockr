@@ -160,6 +160,9 @@ add_permissions() {
 
     # Give permission to /usr/local/bin directory to the current user
     sudo chown -R $(whoami) "${DOCKR_DIR_BIN}"
+
+    # Give permission to Data directory to the current user
+    sudo chown -R $(whoami) "${DOCKR_DIR_DATA}"
 }
 
 # Do specific actions related to the OS
