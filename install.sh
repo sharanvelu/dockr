@@ -236,7 +236,7 @@ print_dockr_success() {
     printf '%s/________/%s/______/%s/____/%s/__/  \__\%s/__/  \_\%s     \n' $MULTI_COLORS
 
     echo -e "${CLR}"
-    echo -e "                           By --${BOLD} SHARAN ${CLR}--\n"
+    echo -e "                           By --${BOLD}${CYAN} SHARAN ${CLR}--\n"
 
     if [ "$1" == "install" ]; then
         echo -e "\t ...is now ${GREEN}successfully${CLR} installed!"
