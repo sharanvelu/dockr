@@ -33,7 +33,7 @@ elif [ "${DT_CONFIG_ACTION}" == 'disable' ]; then
     set_config "${DT_CONFIG_IDENTIFIER}" 0
     echo -e "Configuration for ${CYAN}'"${DT_CONFIG_IDENTIFIER}"'${CLR} is now ${RED}'disabled'${CLR}."
 
-elif [ "${DT_CONFIG_ACTION}" == '--get' ]; then
+elif [ "${DT_CONFIG_ACTION}" == 'get' ]; then
     check_if_config_identifier_exists "${DT_CONFIG_IDENTIFIER}"
 
     is_config_set "${DT_CONFIG_IDENTIFIER}"
@@ -51,8 +51,9 @@ elif [ "${DT_CONFIG_ACTION}" == '--get' ]; then
         echo -e "This will be treated as ${GREEN}enabled${CLR} by default."
     fi
 
+# Display configuration for all the containers.
 elif [ "${DT_CONFIG_ACTION}" == 'list' ]; then
-    echo -e "Asset configurations are set as follows.\n"
+    echo -e "\nAsset configurations :\n"
 
     for DT_ASSET in mysql postgres redis
     do
@@ -64,6 +65,9 @@ elif [ "${DT_CONFIG_ACTION}" == 'list' ]; then
         fi
     done
 
+# Display help command
+elif [ "${DT_CONFIG_ACTION}" == 'help' ]; then
+    display_help "config"
 
 else
     shift 1

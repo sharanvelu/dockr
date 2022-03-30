@@ -140,11 +140,13 @@ if [ $# -gt 0 ]; then
         echo "Options : "
         print_options "" "enable <asset>" "Enable the configuration of specified asset."
         print_options "" "disable <asset>" "Disable the configuration of specified asset."
-        print_options "" "--get <asset>" "Get the status of the specified asset configuration."
+        print_options "" "get <asset>" "Get the status of the specified asset configuration."
+        print_options "" "list       " "List the current configurations for all the asset containers."
         echo -e "\nExample : "
         print_example "dockr config enable mysql"
         print_example "dockr config disable postgres"
-        print_example "dockr config --get redis"
+        print_example "dockr config get redis"
+        print_example "dockr config list"
         print_note "Currently \`mysql\`, \`postgres\` and \`redis\` are the asset available for configurations."
 
     # Shell

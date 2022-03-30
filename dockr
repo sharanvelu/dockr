@@ -64,11 +64,25 @@ if [ -z "${DOCKR_DOCKER_IMAGE}" ]; then
 fi
 export DOCKR_DOCKER_IMAGE
 
+# Additional Docker Compose File.
+if [ -n "${DOCKR_ADD_COMPOSE_FILE}" ]; then
+    DT_ADD_COMPOSE_FILE_PATH="${PROJECT_ROOT_DIR}/${DOCKR_ADD_COMPOSE_FILE}"
+    if [ ! -f "${DT_ADD_COMPOSE_FILE_PATH}" ]; then
+        echo -e "Docker Compose File Specified in ${CYAN}\"DOCKR_ADD_COMPOSE_FILE\"${CLR} env does not exist."
+        echo -e "Please check whether the file ${CYAN}\"${DOCKR_ADD_COMPOSE_FILE}\"${CLR} exists."
+
+        exit 1
+    fi
+
+    # Attach the additional Docker Compose file
+    DOCKR_COMPOSE_FILE="${DOCKR_COMPOSE_FILE} -f ${DT_ADD_COMPOSE_FILE_PATH}"
+fi
+
+# Export Docker Compose file.
+export DOCKR_COMPOSE_FILE
+
 # Composer Versions
 export DOCKR_COMPOSER_VERSION="${DOCKR_COMPOSER_VERSION:-2}"
-
-# Docker Compose file.
-export DOCKR_COMPOSE_FILE
 
 # Source the helper files
 . "${DOCKR_HELPER_BIN_DIR}/display_helpers.sh"
