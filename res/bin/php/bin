@@ -9,4 +9,4 @@ is_dockr_up
 
 # Execute "./vendor/bin" (Binary) Command within web container.
 docker-compose -f "${DOCKR_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
-            vendor/bin/$*
+    vendor/bin/$*
