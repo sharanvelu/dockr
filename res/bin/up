@@ -1,0 +1,129 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+# Source the Common Asset script
+. "${DOCKR_COMMON_BIN_DIR}/asset"
+
+# Source the common Database script
+. "${DOCKR_COMMON_BIN_DIR}/database"
+
+# Source the proxy script.
+. "${DOCKR_COMMON_BIN_DIR}/proxy"
+
+# Checks and Prints any info Provided from Server
+print_info_from_server() {
+    DT_RESPONSE="$(curl -s https://info.dockr.in/cli)"
+    if [ ! "${DT_RESPONSE}" == "" ]; then
+        echo -e "Info From ${CYAN}DockR${CLR} :"
+        echo -e "${DT_RESPONSE}\n"
+    fi
+}
+
+# Check Mandatory Environment variables
+check_required_project_env() {
+    # Check if the project is still containing the "DOCKR_PORT" variable.
+    if [ -n "${DOCKR_PORT}" ]; then
+        echo -e "You are using a deprecated option ${CYAN}\"DOCKR_PORT\"${CLR} which is no more used. Please use ${CYAN}\"DOCKR_SITE\"${CLR}\n"
+    fi
+
+    # Check for Mandatory DOCKR_SITE Env variables
+    if [ -z "${DOCKR_SITE}" ]; then
+        echo -e "Required Parameter ${CYAN}\"DOCKR_SITE\"${CLR} is ${RED}missing${CLR} from ${CYAN}.env${CLR}"
+
+        exit 1
+    fi
+
+    export DOCKR_SITE
+}
+
+# Check for DockR Network
+check_dockr_network() {
+    if ! docker network ls | grep -q -w "${DOCKR_NETWORK}"; then
+        echo -e "Creating ${CYAN}${DOCKR_NAME}${CLR} Network."
+        docker network create "${DOCKR_NETWORK}" >>/dev/null
+        echo -e "${GREEN}${DOCKR_NAME} Network Created.${CLR}"
+        echo -e ""
+    fi
+}
+
+# Check for DockR Network
+check_dockr_composer_cache_volume() {
+    if ! docker volume ls | grep -q -w "${DOCKR_COMPOSER_CACHE_VOLUME}"; then
+        echo -e "Creating ${CYAN}${DOCKR_NAME} Composer Cache${CLR} Volume"
+        docker volume create "${DOCKR_COMPOSER_CACHE_VOLUME}" >>/dev/null
+        echo -e "${GREEN}${DOCKR_NAME} Composer Cache Volume Created.${CLR}"
+        echo -e ""
+    fi
+}
+
+# Manage Asset Containers (Mysql, Postgres, Redis, ...)
+check_asset_container() {
+    if [ -n "${DOCKR_SKIP_ASSET}" ]; then
+        echo -e "${CYAN}DOCKR_SKIP_ASSET${CLR} is provided, Skipping Asset containers and DB check.\n"
+        if [ -n "${DOCKR_OVERRIDE_ASSET_CONFIG}" ]; then
+            echo -e "${RED}Warning :${CLR} Both ${CYAN}DOCKR_SKIP_ASSET${CLR} and ${CYAN}DOCKR_OVERRIDE_ASSET_CONFIG${CLR} are given."
+            echo -e "${CYAN}DOCKR_OVERRIDE_ASSET_CONFIG${CLR} will not be taken into consideration.\n"
+        fi
+
+        echo -e "${PROCESS}Starting Proxy container..."
+        dt_start_asset proxy
+        echo -e "Proxy container ${GREEN}started${CLR} successfully.\n"
+    else
+        start_asset_containers
+    fi
+}
+
+# Check for database existence mentioned in "DB_DATABASE" env
+check_project_database_existence() {
+    if [ -n "${DOCKR_SKIP_ASSET}" ] || [ -n "${DOCKR_SKIP_DB_CHECK}" ]; then
+        if [ -z "${DOCKR_SKIP_ASSET}" ] && [ -n "${DOCKR_SKIP_DB_CHECK}" ]; then
+            echo -e "${CYAN}DOCKR_SKIP_DB_CHECK${CLR} is provided, Skipping DB check.\n"
+        fi
+    else
+        create_project_database
+    fi
+}
+
+# Starts the Project containers
+start_project_containers() {
+    if [ -n "${DOCKR_WORKER}" ]; then
+        WORKER_SERVICE="worker"
+    fi
+
+    # Exporting the DT_SITE var here because it is used in dockr-compose-file.yml
+    DT_SITE="http://${DOCKR_SITE}"
+    export DT_SITE
+
+    docker-compose -f ${DOCKR_COMPOSE_FILE} -p ${PROJECT_NAME} up -d web ${WORKER_SERVICE}
+}
+
+# Get Container Port which is generated dynamically by the Docker
+get_container_port() {
+    DT_PORT=$(docker ps --filter "name=${DOCKR_CONTAINER_NAME}-web" --format "{{.Ports}}" -a)
+
+    DT_PORT=${DT_PORT#*:}
+    DT_PORT=${DT_PORT%-*}
+}
+
+set +e
+
+print_info_from_server
+
+check_required_project_env
+
+check_dockr_network
+
+check_dockr_composer_cache_volume
+
+check_asset_container
+
+check_project_database_existence
+
+start_project_containers
+
+get_container_port
+
+check_proxy_for_project
+
+echo -e "\nYour Application should be running at ${RED}${UNDERLINE}${DT_SITE}${CLR}"

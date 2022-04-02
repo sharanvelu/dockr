@@ -12,36 +12,46 @@
 ## Exit when an error occurs instead of continuing the rest.
 set -e
 
-CLR='\033[0m'
-RED='\033[1;31m'
-GREEN='\033[1;32m'
-BOLD='\033[1m'
+# Font Styling and Colors
+CLR="\033[0m"
+RED="\033[38;5;196m"
+GREEN="\033[38;3;32m"
+ORANGE="\033[38;5;202m"
+LAVENDER="\033[38;5;093m"
+PINK="\033[38;5;163m"
+BOLD="\033[1m"
+CYAN="\033[1;36m"
+
+# Process Indicator
+PROCESS="${CYAN}=>${CLR} "
 
 ## DockR Branch
 DOCKR_BRANCH="${DOCKR_BRANCH:-release}"
+if echo "$*" | grep -q -w "\-\-dev"; then
+    DOCKR_BRANCH=development
+fi
 
-## DockR Name
+## DockR NAME and KEY
+DOCKR_KEY="dockr"
 DOCKR_NAME="DockR"
 
 ## DIRECTORY
-DOCKR_DIR_HOME="${HOME}/dockr"
+DOCKR_DIR_HOME="${HOME}/${DOCKR_KEY}"
 DOCKR_DIR_BIN="/usr/local/bin"
-DOCKR_DIR_DATA="${HOME}/.dockr"
+DOCKR_DIR_DATA="${HOME}/.${DOCKR_KEY}"
 
 ## Config File
 DOCKR_FILE_CONFIG="${DOCKR_DIR_DATA}/config"
 
 # Display Process
 display_process() {
-    echo -e ""
-    echo -e "$*"
+    echo -e "\n${PROCESS}$*"
 }
 
 # Exit the Installation Process
 exiting() {
-    echo -e ""
-    echo -e "${RED}${*}${CLR}"
-    echo -e "Exiting the installation Process..."
+    echo -e "\n${RED}${*}${CLR}"
+    echo -e "${RED}=>${CLR} Exiting the installation Process..."
 
     exit 1
 }
@@ -54,12 +64,13 @@ command_exists() {
 # Verifying operating system
 system_check() {
     case "$(uname -s)" in
-        Linux*) ;;
-        Darwin*) ;;
-        *)
-          echo "OS (operating system) ([$(uname -s)]) not supported." >&2
-          echo "${DOCKR_NAME} supports macOS, Linux, and Windows (WSL2)." >&2
-          exit 1
+    Linux*) ;;
+    Darwin*) ;;
+    *)
+        echo "OS (operating system) ([$(uname -s)]) not supported." >&2
+        echo "${DOCKR_NAME} supports macOS, Linux, and Windows (WSL2)." >&2
+        exit 1
+        ;;
     esac
 }
 
@@ -67,13 +78,13 @@ system_check() {
 add_host_entry() {
     display_process "Adding Hosts Entry for ${DOCKR_NAME} Network..."
 
-    if ! grep -q -w "dockr" /etc/hosts; then
+    if ! grep -q -w "${DOCKR_KEY}" /etc/hosts; then
         echo -e "Please enter your system password (if prompted)!"
         {
             echo ""
             echo "# Added by ${DOCKR_NAME}"
-            echo "127.0.0.1 dockr"
-        } | sudo tee -a /etc/hosts > /dev/null
+            echo "127.0.0.1 ${DOCKR_KEY}"
+        } | sudo tee -a /etc/hosts >/dev/null
     else
         sleep 1
         echo -e "Hosts entry already exists. Skipping..."
@@ -94,7 +105,7 @@ git_perform() {
     # Install DockR
     if [ "$1" == "install" ]; then
         display_process "Getting ${DOCKR_NAME} from git."
-        git clone --single-branch --branch "${DOCKR_BRANCH}" --no-tags -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
+        git clone --branch "${DOCKR_BRANCH}" --no-tags -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
 
     # Update DockR
     elif [ "$1" == "update" ]; then
@@ -122,18 +133,14 @@ finalize_setup() {
     display_process "Finalizing ${DOCKR_NAME} Setup..."
 
     # Remove the dockr bin file
-    rm -rf "${DOCKR_DIR_BIN}/dockr"
-
-    if [ ! -d /usr/local ]; then
-        sudo mkdir /usr/local
-    fi
+    rm -rf "${DOCKR_DIR_BIN}/${DOCKR_KEY}"
 
     if [ ! -d "${DOCKR_DIR_BIN}" ]; then
-        sudo mkdir "${DOCKR_DIR_BIN}"
+        sudo mkdir -p "${DOCKR_DIR_BIN}"
     fi
 
     # Update dockr executable by creating a symlink
-    sudo ln -s "${DOCKR_DIR_HOME}/dockr" "${DOCKR_DIR_BIN}/dockr"
+    sudo ln -s "${DOCKR_DIR_HOME}/${DOCKR_KEY}" "${DOCKR_DIR_BIN}/${DOCKR_KEY}"
 
     # Setup .dockr data folder
     if [ ! -d "${DOCKR_DIR_DATA}" ]; then
@@ -149,26 +156,26 @@ finalize_setup() {
 # Add necessary permissions for necessary files / directories.
 add_permissions() {
     # Give Permission for dockr executables
-    chmod u+x "${DOCKR_DIR_HOME}/dockr"
+    chmod u+x "${DOCKR_DIR_HOME}/${DOCKR_KEY}"
 
     # Give permission to /usr/local/bin directory to the current user
-    sudo chown -R `whoami` "${DOCKR_DIR_BIN}"
+    sudo chown -R $(whoami) "${DOCKR_DIR_BIN}"
+
+    # Give permission to Data directory to the current user
+    sudo chown -R $(whoami) "${DOCKR_DIR_DATA}"
 }
 
 # Do specific actions related to the OS
 os_specific_actions() {
     # Execute some commands if the system is Linux using WSL kernel
-    if is_wsl
-    then
+    if is_wsl; then
         wsl_specific_command
     fi
 
     # Execute some commands if the system is mac
-    if is_mac
-    then
+    if is_mac; then
         # Execute specific commands if the system is M1 based Mac
-        if is_mac_m1
-        then
+        if is_mac_m1; then
             mac_specific_command
         fi
     fi
@@ -176,29 +183,29 @@ os_specific_actions() {
 
 # check if the machine is Linux using WSL
 is_wsl() {
-	case "$(uname -r)" in
-	    *microsoft* ) true ;; # WSL 2
-        *Microsoft* ) true ;; # WSL 1
-        * ) false;;
-	esac
+    case "$(uname -r)" in
+    *microsoft*) true ;; # WSL 2
+    *Microsoft*) true ;; # WSL 1
+    *) false ;;
+    esac
 }
 
 # check if the machine is MacOS
 is_mac() {
-	case "$(uname -s)" in
-        *darwin* ) true ;;
-        *Darwin* ) true ;;
-        * ) false;;
-	esac
+    case "$(uname -s)" in
+    *darwin*) true ;;
+    *Darwin*) true ;;
+    *) false ;;
+    esac
 }
 
 # check if the machine is M1 based Mac
 is_mac_m1() {
-	case "$(uname -m)" in
-        *arm64* ) true ;;
-        *arm* ) true ;;
-        * ) false;;
-	esac
+    case "$(uname -m)" in
+    *arm64*) true ;;
+    *arm*) true ;;
+    *) false ;;
+    esac
 }
 
 # Execute Windows specific commands if any
@@ -212,26 +219,31 @@ mac_specific_command() {
 }
 
 print_dockr_success() {
-    echo -e "${RED}"
-    printf '           ___                       _______ \n'
-    printf '          /  /_____ ____   __   __  /  __  / \n'
-    printf '   ______/  /  __  / __/ /  / /  / /  / / /  \n'
-    printf '  /  ___   / /  / / /   /  //_ /  /  /_/_/   \n'
-    printf ' /  /__/  / /__/ / /__ /  /\  \  /  /\ \     \n'
-    printf '/________/______/____//__/  \__\/__/  \_\    \n'
+    MULTI_COLORS="
+      $(printf ${RED})
+      $(printf ${ORANGE})
+      $(printf ${GREEN})
+      $(printf ${LAVENDER})
+      $(printf ${PINK})
+      $(printf ${CLR})
+    "
+
+    printf '     %s      ___ %s        %s      %s          %s_______  %s\n' $MULTI_COLORS
+    printf '    %s      /  /%s ______ %s____  %s __   __  %s/  __  / %s \n' $MULTI_COLORS
+    printf '   %s______/  /%s/  __  /%s/ __/ %s/  / /  / %s/  / / / %s  \n' $MULTI_COLORS
+    printf '  %s/  ___   /%s/ /  / /%s/ /   %s/  //_ /  %s/  /_/_/ %s   \n' $MULTI_COLORS
+    printf ' %s/  /__/  /%s/ /__/ /%s/ /__ %s/  /\  \  %s/  /\ \  %s    \n' $MULTI_COLORS
+    printf '%s/________/%s/______/%s/____/%s/__/  \__\%s/__/  \_\%s     \n' $MULTI_COLORS
 
     echo -e "${CLR}"
-#    printf '       ___  .  . .    ___  .     .    .         \n'
-#    printf '      /__  /--/ /_\  /__/ /_\   / \  /          \n'
-#    printf 'BY   ___/ /  / /   \/ |  /   \ /   \/           \n'
-    echo -e "                           By --${BOLD} SHARAN ${CLR}--"
+    echo -e "                           By --${BOLD}${CYAN} SHARAN ${CLR}--\n"
 
     if [ "$1" == "install" ]; then
-        display_process "...is now ${GREEN}successfully${CLR} installed!"
+        echo -e "\t ...is now ${GREEN}successfully${CLR} installed!"
     fi
 
     if [ "$1" == "update" ]; then
-        display_process "...is ${GREEN}successfully${CLR} updated!"
+        echo -e "\t\t...is ${GREEN}successfully${CLR} updated!"
     fi
 }
 

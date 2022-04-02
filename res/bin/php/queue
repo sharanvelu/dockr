@@ -1,0 +1,9 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+# Check if DockR is running
+is_dockr_up
+
+docker-compose -f "${DOCKR_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
+    php artisan queue:${2:-listen}

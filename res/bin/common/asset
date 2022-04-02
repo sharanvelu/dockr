@@ -1,0 +1,88 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+# Source the Common config script
+. "${DOCKR_COMMON_BIN_DIR}/config"
+
+# Store the Command originated from data.
+COMMAND_ORIGIN=$1
+
+# Check if the provided asset container should start with respect to config, overrides and current container status.
+should_start_asset() {
+    # Check if SKIP_ASSET env is set
+    if [ -n "${DOCKR_SKIP_ASSET}" ]; then
+        return 0
+    fi
+
+    # Check if the configs are set to start the given asset container.
+    get_config $1
+    if [ $? == 1 ]; then
+        return 1
+    fi
+
+    # Check if the configs are overridden for the given asset container.
+    if echo ${DOCKR_OVERRIDE_ASSET_CONFIG} | grep -q -w $1
+    then
+        return 1
+    fi
+
+    # Check if the specified containers are already started.
+    # This is to avoid rerunning the same container.
+    if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep mysql | grep -q running
+    then
+        return 0
+    fi
+
+    # Returns `0` If both config and overridden doesnt needs to start the given asset container.
+    return 0
+}
+
+# Check and start asset containers.
+start_asset_containers() {
+    DT_START_MYSQL=""
+    DT_START_POSTGRES=""
+    DT_START_REDIS=""
+
+    # For now proxy container will start by default.
+    # Later this will be added to config.
+    DT_START_PROXY="proxy"
+
+    # Check Mysql config data.
+    should_start_asset mysql
+    if [ $? == 1 ]; then
+        DT_START_MYSQL="mysql"
+    fi
+
+    # Check Postgres config data.
+    should_start_asset postgres
+    if [ $? == 1 ]; then
+        DT_START_POSTGRES="postgres"
+    fi
+
+    # Check Redis config data.
+    should_start_asset redis
+    if [ $? == 1 ]; then
+        DT_START_REDIS="redis"
+    fi
+
+    # Check if any of the containers should be started. If there is no containers to start then
+    if [ "${DT_START_PROXY}" != "" ] || [ "${DT_START_MYSQL}" != "" ] || [ "${DT_START_POSTGRES}" != "" ] || [ "${DT_START_REDIS}" != "" ]; then
+        echo -e "${PROCESS}Starting asset containers..."
+        dt_start_asset ${DT_START_PROXY} ${DT_START_MYSQL} ${DT_START_POSTGRES} ${DT_START_REDIS}
+        echo -e "Asset containers ${GREEN}started${CLR} successfully."
+        if [ "${COMMAND_ORIGIN}" == "up" ]; then
+            echo ""
+        fi
+
+    # If no containers are set to start and the command is triggered using `asset up`, then should display error.
+    elif [ "${COMMAND_ORIGIN}" == "asset" ]; then
+        display_assets_not_set_to_start
+    fi
+}
+
+# Start the asset containers specified as the params
+dt_start_asset()
+{
+    docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" up -d $@
+}
