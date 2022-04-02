@@ -25,15 +25,14 @@ CYAN="\033[1;36m"
 # Process Indicator
 PROCESS="${CYAN}=>${CLR} "
 
-## DockR Branch
-DOCKR_BRANCH="${DOCKR_BRANCH:-release}"
 if echo "$*" | grep -q -w "\-\-dev"; then
-    DOCKR_BRANCH=development
+    DT_BRANCH=development
 fi
 
-## DockR NAME and KEY
+## DockR NAME, KEY and TAG
 DOCKR_KEY="dockr"
 DOCKR_NAME="DockR"
+DOCKR_TAG="v1.5"
 
 ## DIRECTORY
 DOCKR_DIR_HOME="${HOME}/${DOCKR_KEY}"
@@ -105,7 +104,13 @@ git_perform() {
     # Install DockR
     if [ "$1" == "install" ]; then
         display_process "Getting ${DOCKR_NAME} from git."
-        git clone --branch "${DOCKR_BRANCH}" --no-tags -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
+        ## DockR Branch
+        if [ "${DT_BRANCH}" == "development" ]; then
+            git clone --branch "${DT_BRANCH}" -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
+        else
+            git clone -b ${DOCKR_TAG} -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}" >/dev/null 2>&1
+        fi
+
 
     # Update DockR
     elif [ "$1" == "update" ]; then
@@ -120,9 +125,14 @@ git_perform() {
             CURRENT_DIR="$(pwd)"
             cd "${DOCKR_DIR_HOME}" || exiting "Unable to locate dir ${DOCKR_DIR_HOME}"
             git reset --hard -q
-            git checkout -q "${DOCKR_BRANCH}"
             display_process "Pulling latest changes from git."
-            git pull -q
+            git fetch -q
+            if [ "${DT_BRANCH}" == "development" ]; then
+                git checkout -q "${DT_BRANCH}"
+                git pull -q
+            else
+                git checkout -q tags/${DOCKR_TAG}
+            fi
             cd "${CURRENT_DIR}" || exiting "Unable to locate dir ${CURRENT_DIR}"
         fi
     fi
