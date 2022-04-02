@@ -25,14 +25,15 @@ CYAN="\033[1;36m"
 # Process Indicator
 PROCESS="${CYAN}=>${CLR} "
 
+# Git Tag and Branch
+DOCKR_TAG="v1.5"
 if echo "$*" | grep -q -w "\-\-dev"; then
     DT_BRANCH=development
 fi
 
-## DockR NAME, KEY and TAG
+## DockR NAME, KEY
 DOCKR_KEY="dockr"
 DOCKR_NAME="DockR"
-DOCKR_TAG="v1.5"
 
 ## DIRECTORY
 DOCKR_DIR_HOME="${HOME}/${DOCKR_KEY}"
