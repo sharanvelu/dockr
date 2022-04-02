@@ -2,6 +2,11 @@
 
 ## DockR by Sharan
 
+# Get version using Git
+DT_DESCRIBE=$(git describe --all)
+DT_TAGS=${DT_DESCRIBE/tags\//}
+DT_CURRENT_NAME=${DT_TAGS/heads\//}
+
 display_dockr_name
 echo -e "A Local development environment for Laravel using Docker"
-echo -e "Current Version : ${DOCKR_VERSION:-<unknown dev version>}"
+echo -e "Current Version : ${DT_CURRENT_NAME}"
