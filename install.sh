@@ -27,14 +27,18 @@ PROCESS="${CYAN}=>${CLR} "
 
 ## DockR Branch
 DOCKR_BRANCH="${DOCKR_BRANCH:-release}"
+if echo "$*" | grep -q -w "\-\-dev"; then
+    DOCKR_BRANCH=development
+fi
 
-## DockR Name
+## DockR NAME and KEY
+DOCKR_KEY="dockr"
 DOCKR_NAME="DockR"
 
 ## DIRECTORY
-DOCKR_DIR_HOME="${HOME}/dockr"
+DOCKR_DIR_HOME="${HOME}/${DOCKR_KEY}"
 DOCKR_DIR_BIN="/usr/local/bin"
-DOCKR_DIR_DATA="${HOME}/.dockr"
+DOCKR_DIR_DATA="${HOME}/.${DOCKR_KEY}"
 
 ## Config File
 DOCKR_FILE_CONFIG="${DOCKR_DIR_DATA}/config"
@@ -74,12 +78,12 @@ system_check() {
 add_host_entry() {
     display_process "Adding Hosts Entry for ${DOCKR_NAME} Network..."
 
-    if ! grep -q -w "dockr" /etc/hosts; then
+    if ! grep -q -w "${DOCKR_KEY}" /etc/hosts; then
         echo -e "Please enter your system password (if prompted)!"
         {
             echo ""
             echo "# Added by ${DOCKR_NAME}"
-            echo "127.0.0.1 dockr"
+            echo "127.0.0.1 ${DOCKR_KEY}"
         } | sudo tee -a /etc/hosts >/dev/null
     else
         sleep 1
@@ -101,7 +105,7 @@ git_perform() {
     # Install DockR
     if [ "$1" == "install" ]; then
         display_process "Getting ${DOCKR_NAME} from git."
-        git clone --single-branch --branch "${DOCKR_BRANCH}" --no-tags -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
+        git clone --branch "${DOCKR_BRANCH}" --no-tags -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
 
     # Update DockR
     elif [ "$1" == "update" ]; then
@@ -129,18 +133,14 @@ finalize_setup() {
     display_process "Finalizing ${DOCKR_NAME} Setup..."
 
     # Remove the dockr bin file
-    rm -rf "${DOCKR_DIR_BIN}/dockr"
-
-    if [ ! -d /usr/local ]; then
-        sudo mkdir /usr/local
-    fi
+    rm -rf "${DOCKR_DIR_BIN}/${DOCKR_KEY}"
 
     if [ ! -d "${DOCKR_DIR_BIN}" ]; then
-        sudo mkdir "${DOCKR_DIR_BIN}"
+        sudo mkdir -p "${DOCKR_DIR_BIN}"
     fi
 
     # Update dockr executable by creating a symlink
-    sudo ln -s "${DOCKR_DIR_HOME}/dockr" "${DOCKR_DIR_BIN}/dockr"
+    sudo ln -s "${DOCKR_DIR_HOME}/${DOCKR_KEY}" "${DOCKR_DIR_BIN}/${DOCKR_KEY}"
 
     # Setup .dockr data folder
     if [ ! -d "${DOCKR_DIR_DATA}" ]; then
@@ -156,7 +156,7 @@ finalize_setup() {
 # Add necessary permissions for necessary files / directories.
 add_permissions() {
     # Give Permission for dockr executables
-    chmod u+x "${DOCKR_DIR_HOME}/dockr"
+    chmod u+x "${DOCKR_DIR_HOME}/${DOCKR_KEY}"
 
     # Give permission to /usr/local/bin directory to the current user
     sudo chown -R $(whoami) "${DOCKR_DIR_BIN}"

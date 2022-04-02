@@ -15,11 +15,16 @@ check_proxy_for_project() {
 # Check if the Site is set in /etc/hosts.
 check_site_in_hosts() {
     # DockR will add the site in the /etc/hosts file in the future.
-    if ! grep -q -w ${DOCKR_SITE} /etc/hosts; then
-        echo -e "Specified site ${CYAN}${DOCKR_SITE}${CLR} is not present in the ${CYAN}/etc/hosts${CLR} file."
-        echo -e "Please add the site to ${BOLD}/etc/hosts${CLR} file \n"
+    if ! echo ${DOCKR_SITE} | grep -q "*"; then
+        if ! grep -q -w ${DOCKR_SITE} /etc/hosts; then
+            echo -e "\nSpecified site ${CYAN}${DOCKR_SITE}${CLR} is not present in the ${CYAN}/etc/hosts${CLR} file."
+            echo -e "Please add the site to ${BOLD}/etc/hosts${CLR} file."
 
-        # exit 1
+            # exit 1
+        fi
+    else
+        echo -e "\nYou have been using wildcard (*) in ${CYAN}DOCKR_SITE${CLR}."
+        echo -e "Make sure you have added the appropriate site in ${CYAN}/etc/hosts${CLR} file"
     fi
 }
 
