@@ -19,9 +19,10 @@ is_dockr_up() {
 
 # Checks For DockR Asset Containers running...
 is_dockr_asset_up() {
-    if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep -q -w "$1"; then
+    DT_ASSET="dockr_$1"
+    if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep -q -w "${DT_ASSET}"; then
         # Check if there is exited mysql containers
-        if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep -w "$1" | grep -q -w exited; then
+        if docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" ps | grep -w "${DT_ASSET}" | grep -q -w exited; then
             dockr_asset_container_is_stopped "$1"
         fi
 
