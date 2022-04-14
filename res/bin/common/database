@@ -44,8 +44,13 @@ import_database() {
 
     # Import the Dump file using Postgres Import Command
     if [ "${DT_DATABASE_MODEL}" == "postgres" ]; then
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres \
-            bash -c "psql -U ${DOCKR_ASSET_USERNAME} -d ${DT_DATABASE_NAME} < ${DT_CONTAINER_DUMP_FILE_PATH}"
+        if echo $* | grep -q -w "\-\-use\-pg_restore"; then
+            docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres \
+                bash -c "pg_restore --no-privileges --no-owner --clean --no-acl -U ${DOCKR_ASSET_USERNAME} -d ${DT_DATABASE_NAME} -1 ${DT_CONTAINER_DUMP_FILE_PATH}"
+        else
+            docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres \
+                bash -c "psql -U ${DOCKR_ASSET_USERNAME} -d ${DT_DATABASE_NAME} < ${DT_CONTAINER_DUMP_FILE_PATH}"
+        fi
     fi
 
     # Delete the Dump file from the container
@@ -92,7 +97,7 @@ create_project_database() {
             fi
 
         # If DB is "POSTGRES"
-        elif [ "${DB_CONNECTION}" == "postgres" ] || [ "${DB_CONNECTION}" == "psql" ]; then
+        elif [ "${DB_CONNECTION}" == "pgsql" ]; then
             if ! docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres bash -c "psql -U ${DOCKR_ASSET_USERNAME} -l | grep -q -w ${DB_DATABASE}"; then
                 echo -e "Creating Database ${CYAN}${DB_DATABASE}${CLR}."
                 docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec postgres bash -c "psql -U ${DOCKR_ASSET_USERNAME} -d ${DOCKR_ASSET_DEFAULT_DATABASE} -c \"create database ${DB_DATABASE}\" >> /dev/null"

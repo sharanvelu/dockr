@@ -16,7 +16,7 @@ if [ "$1" == "import" ]; then
     DT_DATABASE_NAME=$2
     DT_DUMP_FILE=$3
 
-    import_database
+    import_database "$*"
 
 # Start SSH Bash session into Postgres container.
 elif [ "$1" == "shell" ] || [ "$1" == "bash" ]; then

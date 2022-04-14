@@ -104,6 +104,7 @@ get_container_port() {
 
     DT_PORT=${DT_PORT#*:}
     DT_PORT=${DT_PORT%-*}
+    DT_PORT=${DT_PORT:0:5}
 }
 
 set +e
