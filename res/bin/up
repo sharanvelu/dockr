@@ -27,7 +27,7 @@ print_info_from_server() {
 check_required_project_env() {
     # Check if the project is still containing the "DOCKR_PORT" variable.
     if [ -n "${DOCKR_PORT}" ]; then
-        echo -e "You are using a deprecated option ${CYAN}\"DOCKR_PORT\"${CLR} which is no more used. Please use ${CYAN}\"DOCKR_SITE\"${CLR}\n"
+        echo -e "You are using a deprecated option ${CYAN}\"DOCKR_PORT\"${CLR} which is no more in use. Please use ${CYAN}\"DOCKR_SITE\"${CLR}\n"
     fi
 
     # Check for Mandatory DOCKR_SITE Env variables
