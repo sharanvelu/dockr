@@ -15,8 +15,11 @@
 print_info_from_server() {
     DT_RESPONSE="$(curl -s https://info.dockr.in/cli)"
     if [ ! "${DT_RESPONSE}" == "" ]; then
+        echo -e "${GREEN}---------------------------------------${CLR}"
         echo -e "Info From ${CYAN}DockR${CLR} :"
-        echo -e "${DT_RESPONSE}\n"
+        echo -e "${DT_RESPONSE}"
+        echo -e "${GREEN}---------------------------------------${CLR}"
+        echo ""
     fi
 }
 

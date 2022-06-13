@@ -1,0 +1,20 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+if [ "$2" == "add" ]; then
+    DT_INCOMING_SITE=$3
+    DT_PROXY_SITE=$4
+
+    DT_HAS_PROTO="false"
+    if [[ "${DT_PROXY_SITE}" == http://* ]] || [[ "${DT_PROXY_SITE}" == https://* ]]; then
+        DT_HAS_PROTO="true"
+    fi
+
+    if [ "${DT_HAS_PROTO}" == "false" ]; then
+        DT_PROXY_SITE="http://${DT_PROXY_SITE}"
+    fi
+
+    docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec proxy \
+        bash -c "add-listener ${DT_INCOMING_SITE} ${DT_PROXY_SITE} >> /dev/null"
+fi
