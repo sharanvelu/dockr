@@ -2,13 +2,6 @@
 
 ## DockR by Sharan
 
-# Checks For the working of Docker Engine...
-if ! docker info >> /dev/null 2>&1; then
-    echo -e "${BOLD}Docker is not running.${CLR}"
-
-    exit 1
-fi
-
 # Project Root Dir
 PROJECT_ROOT_DIR="$(pwd)"
 
@@ -98,11 +91,17 @@ if [ $# -gt 0 ]; then
 
     # Dynamic PHP command execution using separate files from Bin PHP directory.
     elif [ -f "${DOCKR_BIN_DIR}/php/$1" ]; then
+        is_docker_up
         . "${DOCKR_BIN_DIR}/php/$1"
 
     # Run Node, NPM, NPX, Yarn commands
     elif [ -f "${DOCKR_BIN_DIR}/node/$1" ]; then
+        is_docker_up
         . "${DOCKR_BIN_DIR}/node/$1"
+
+    # Run Independent DockR commands
+    elif [ -f "${DOCKR_BIN_DIR}/independent/$1" ]; then
+        . "${DOCKR_BIN_DIR}/independent/$1"
 
     # Display the DockR Version.
     elif [ "$1" == "--version" ] || [ "$1" == "-version" ] || [ "$1" == "-v" ] || [ "$1" == "--v" ]; then

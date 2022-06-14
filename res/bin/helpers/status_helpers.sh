@@ -31,3 +31,12 @@ is_dockr_asset_up() {
         dockr_asset_container_not_running "$1"
     fi
 }
+
+is_docker_up() {
+    # Checks For the working of Docker Engine...
+    if ! docker info >> /dev/null 2>&1; then
+        echo -e "${BOLD}Docker is not running.${CLR}"
+
+        exit 1
+    fi
+}
