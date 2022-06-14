@@ -1,0 +1,23 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+PS_FORMAT="table {{.ID}}|{{.Names}}|{{.Label \"SERVICE\"}}|{{.Label \"SITE\"}}|{{title .State}}|{{.Status}}${CLR}"
+
+# Asset Containers List
+ASSET_CONT_TEXT="--AC--"
+ASSET_CONT_LIST="${ASSET_CONT_TEXT}\n$(docker ps -f "network=${DOCKR_NETWORK}" --filter "label=TYPE=asset" --format "${PS_FORMAT}" -a)"
+
+# Project Containers List
+PROJECT_CONT_TEXT="--PC--"
+PROJECT_CONT_LIST="${PROJECT_CONT_TEXT}\n$(docker ps -f "network=${DOCKR_NETWORK}" --filter "label=TYPE=project" --format "${PS_FORMAT}" -a)"
+
+# Split the result into a table
+OUTPUT_TEXT=$(echo -e "${ASSET_CONT_LIST}newLine${PROJECT_CONT_LIST}" | column -t -s "|")
+
+# Split the newLine char into a new Line and print the result
+OUTPUT_TEXT="${OUTPUT_TEXT//newLine/\\n\\n}"
+OUTPUT_TEXT=${OUTPUT_TEXT//"--AC--"/"${RED}Asset Containers...${CYAN}"}
+OUTPUT_TEXT=${OUTPUT_TEXT//"--PC--"/"${RED}Project Containers...${CYAN}"}
+
+echo -e "${OUTPUT_TEXT}"

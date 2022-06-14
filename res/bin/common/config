@@ -2,6 +2,7 @@
 
 ## DockR by Sharan
 
+# Set configuration value
 set_config() {
     KEY=$1
     VALUE=$2
@@ -18,6 +19,7 @@ set_config() {
     fi
 }
 
+# Get configuration value
 get_config() {
     KEY=$1
     DATA_ENTRY=$(grep -w "${KEY}" "${DOCKR_FILE_CONFIG}")
@@ -28,4 +30,17 @@ get_config() {
     fi
 
     return "${CONFIG_VALUE}"
+}
+
+# Check if config is set
+is_config_set() {
+    KEY=$1
+    DATA_ENTRY=$(grep -w "${KEY}" "${DOCKR_FILE_CONFIG}")
+    CONFIG_VALUE="${DATA_ENTRY//${KEY}\=/}"
+
+    if [ "${CONFIG_VALUE}" == "" ]; then
+        return 0
+    fi
+
+    return 1
 }

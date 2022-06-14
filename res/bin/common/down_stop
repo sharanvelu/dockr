@@ -13,11 +13,11 @@ terminate_all() {
 
         # Handles Normal Stop procedure.
         else
-            echo -e "${RED}Stopping${CLR} all containers."
+            echo -e "${PROCESS}${RED}Stopping${CLR} all containers."
 
             # Stops the container before removing..
             docker stop ${PS_RESULTS} >> /dev/null
-            echo -e "All containers ${GREEN}stopped${CLR} successfully."
+            echo -e "All containers ${RED}stopped${CLR} successfully."
 
             # Remove the container if it was down command.
             if [ "${STOP_TYPE}" == "down" ]; then
@@ -35,7 +35,7 @@ terminate_all() {
 # Terminate Asset Containers
 terminate_asset() {
     echo -e ""
-    echo -e "Stopping asset containers..."
+    echo -e "${PROCESS}Stopping asset containers..."
     docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" "$1"
     echo -e "Asset containers ${GREEN}stopped${CLR} successfully."
 }

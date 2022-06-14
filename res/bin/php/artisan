@@ -8,5 +8,5 @@ shift 1
 is_dockr_up
 
 # Execute PHP Artisan command within the container.
-docker-compose -f "${DOCKER_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
+docker-compose -f "${DOCKR_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
     php artisan $@
