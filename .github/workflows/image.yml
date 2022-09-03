@@ -23,11 +23,8 @@ jobs:
       - name: Create and use Buildx driver
         run: docker buildx create --use --platform linux/arm64,linux/amd64,linux/arm/v7 --name dockr-builder
 
-      - name: sample
-        run: pwd && ls
-
       - name: build the image
         run: |
-          docker buildx build --push \
+          pwd && ls && docker buildx build --push \
             --tag sharanvelu/laravel-php:test-github-actions \
             --platform linux/arm64,linux/amd64,linux/arm/v7 .
