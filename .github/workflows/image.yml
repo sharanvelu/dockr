@@ -23,6 +23,9 @@ jobs:
       - name: Create and use Buildx driver
         run: docker buildx create --use --platform linux/arm64,linux/amd64,linux/arm/v7 --name dockr-builder
 
+      - name: sample
+        run: pwd && ls
+
       - name: build the image
         run: |
           docker buildx build --push \
