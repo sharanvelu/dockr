@@ -47,7 +47,7 @@ display_assets_not_set_to_start() {
 
 # Display Help command
 display_help() {
-    . "${DOCKR_BIN_DIR}/help"
+    . "${DOCKR_BIN_DIR}/independent/help"
 }
 
 # Display DockR Name
