@@ -1,0 +1,29 @@
+version: '3.5'
+
+services:
+    web:
+        build:
+            context: ${DT_FLASK_DOCKER_CONTEXT}
+            dockerfile: ${DT_FLASK_DOCKER_FILE}
+            args:
+                - DT_PYTHON_TAG=${DT_PYTHON_TAG}
+                - DT_POETRY_VERSION=${DOCKR_POETRY_VERSION}
+                - DT_PROJECT_ROOT_DIR=${PROJECT_ROOT_DIR}
+        environment:
+            - FLASK_APP=${FLASK_APP}
+            - FLASK_ENV=development
+        container_name: "${DOCKR_CONTAINER_NAME}-web"
+        networks:
+            - "${DOCKR_NETWORK:-dockr}"
+        ports:
+            - "0:5000"
+        volumes:
+            - "${PROJECT_ROOT_DIR}/:/app"
+        labels:
+            - "TYPE=project"
+            - "SERVICE=web"
+            - "SITE=${DT_SITE:--}"
+
+networks:
+    dockr:
+        external: true

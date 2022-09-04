@@ -13,7 +13,7 @@ fi
 # DockR Variables
 DOCKR_NAME="DockR"
 DOCKR_NETWORK="dockr"
-DOCKR_VERSION="v1.5.1"
+DOCKR_VERSION="v1.5.2"
 DOCKR_HOME_DIR="${HOME}/dockr"
 if command -v realpath >/dev/null 2>&1; then
     DOCKR_REALPATH=$(realpath $0)
@@ -88,6 +88,11 @@ if [ $# -gt 0 ]; then
     # Dynamic command execution using separate files.
     if [ -f "${DOCKR_BIN_DIR}/$1" ]; then
         . "${DOCKR_BIN_DIR}/$1"
+
+    # Dynamic Flask based commands.
+    elif [ ${DOCKR_MODE:-php} == "flask" ]; then
+        is_docker_up
+        . "${DOCKR_BIN_DIR}/flask/$1"
 
     # Dynamic PHP command execution using separate files from Bin PHP directory.
     elif [ -f "${DOCKR_BIN_DIR}/php/$1" ]; then
