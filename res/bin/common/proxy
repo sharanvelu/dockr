@@ -18,7 +18,13 @@ check_site_in_hosts() {
     if ! echo ${DOCKR_SITE} | grep -q "*"; then
         if ! grep -q -w ${DOCKR_SITE} /etc/hosts; then
             echo -e "\nSpecified site ${CYAN}${DOCKR_SITE}${CLR} is not present in the ${CYAN}/etc/hosts${CLR} file."
-            echo -e "Please add the site to ${BOLD}/etc/hosts${CLR} file."
+            echo -e "Adding site ${CYAN}${DOCKR_SITE}${CLR} in the /etc/hosts file."
+            {
+                echo ""
+                echo "# Added by ${DOCKR_NAME}"
+                echo "127.0.0.1     ${DOCKR_SITE}"
+            } | sudo tee -a /etc/hosts > /dev/null
+            echo -e "Site ${CYAN}${DOCKR_SITE}${CLR} added to the /etc/hosts file."
 
             # exit 1
         fi
@@ -36,7 +42,7 @@ add_site_to_proxy_container() {
         DT_PROXY_SITE="http://host.docker.internal:${DT_PORT}"
         docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec proxy bash -c "add-listener ${DOCKR_SITE} ${DT_PROXY_SITE} >> /dev/null"
 
-        sleep 2
+#        sleep 2
 
     # Unable to fetch port from container.
     else
