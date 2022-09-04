@@ -103,8 +103,9 @@ git_perform() {
     if [ "$1" == "install" ]; then
         display_process "Getting ${DOCKR_NAME} from git."
         ## DockR Branch
-        if echo "$*" | grep -q -w "\-\-dev"; then
-            git clone --branch "${DT_BRANCH}" -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
+        if [ -n "${DOCKR_USE_BRANCH}" ]; then
+            echo -e "Getting ${DOCKR_NAME} from '${GREEN}${DOCKR_USE_BRANCH}${CLR}' Branch"
+            git clone --branch "${DOCKR_USE_BRANCH}" -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
         else
             git clone -b ${DOCKR_TAG} -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}" >/dev/null 2>&1
         fi
@@ -125,8 +126,9 @@ git_perform() {
             git reset --hard -q
             display_process "Pulling latest changes from git."
             git fetch -q
-            if echo "$*" | grep -q -w "\-\-dev"; then
-                git checkout -q "${DT_BRANCH}"
+            if [ -n "${DOCKR_USE_BRANCH}" ]; then
+                echo -e "Getting ${DOCKR_NAME} from '${GREEN}${DOCKR_USE_BRANCH}${CLR}' Branch"
+                git checkout -q "${DOCKR_USE_BRANCH}"
                 git pull -q
             else
                 git checkout -q tags/${DOCKR_TAG}
