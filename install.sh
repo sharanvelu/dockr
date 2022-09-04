@@ -26,10 +26,7 @@ CYAN="\033[1;36m"
 PROCESS="${CYAN}=>${CLR} "
 
 # Git Tag and Branch
-DOCKR_TAG="v1.5"
-if echo "$*" | grep -q -w "\-\-dev"; then
-    DT_BRANCH=development
-fi
+DOCKR_TAG="v1.5.1"
 
 ## DockR NAME, KEY
 DOCKR_KEY="dockr"
@@ -106,7 +103,7 @@ git_perform() {
     if [ "$1" == "install" ]; then
         display_process "Getting ${DOCKR_NAME} from git."
         ## DockR Branch
-        if [ "${DT_BRANCH}" == "development" ]; then
+        if echo "$*" | grep -q -w "\-\-dev"; then
             git clone --branch "${DT_BRANCH}" -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}"
         else
             git clone -b ${DOCKR_TAG} -q https://github.com/sharanvelu/dockr.git "${DOCKR_DIR_HOME}" >/dev/null 2>&1
@@ -128,7 +125,7 @@ git_perform() {
             git reset --hard -q
             display_process "Pulling latest changes from git."
             git fetch -q
-            if [ "${DT_BRANCH}" == "development" ]; then
+            if echo "$*" | grep -q -w "\-\-dev"; then
                 git checkout -q "${DT_BRANCH}"
                 git pull -q
             else
