@@ -90,7 +90,7 @@ if [ $# -gt 0 ]; then
         . "${DOCKR_BIN_DIR}/$1"
 
     # Dynamic Flask based commands.
-    elif [ ${DOCKR_MODE:-php} == "flask" ]; then
+    elif [ ${DOCKR_MODE:-php} == "flask" ] && [ -f "${DOCKR_BIN_DIR}/php/$1" ]; then
         is_docker_up
         . "${DOCKR_BIN_DIR}/flask/$1"
 
