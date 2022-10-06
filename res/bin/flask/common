@@ -45,9 +45,11 @@ function get_requirement_files() {
     mkdir "${DOCKR_HOME_DIR}/res/flask/temp"
     if [[ -f "${PROJECT_ROOT_DIR}/requirements.txt" ]]; then
         cp "${PROJECT_ROOT_DIR}/requirements.txt" "${DOCKR_HOME_DIR}/res/flask/temp/requirements.txt"
-    elif [[ -f "${PROJECT_ROOT_DIR}/poetry.lock" ]]; then
+    fi
+    if [[ -f "${PROJECT_ROOT_DIR}/poetry.lock" ]]; then
         cp "${PROJECT_ROOT_DIR}/poetry.lock" "${DOCKR_HOME_DIR}/res/flask/temp/poetry.lock"
-    elif [[ -f "${PROJECT_ROOT_DIR}/pyproject.toml" ]]; then
+    fi
+    if [[ -f "${PROJECT_ROOT_DIR}/pyproject.toml" ]]; then
         cp "${PROJECT_ROOT_DIR}/pyproject.toml" "${DOCKR_HOME_DIR}/res/flask/temp/pyproject.toml"
     fi
 }
