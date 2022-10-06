@@ -94,6 +94,11 @@ if [ $# -gt 0 ]; then
         is_docker_up
         . "${DOCKR_BIN_DIR}/flask/$1"
 
+    # Dynamic Django based commands.
+    elif [ ${DOCKR_MODE:-php} == "django" ] && [ -f "${DOCKR_BIN_DIR}/php/$1" ]; then
+        is_docker_up
+        . "${DOCKR_BIN_DIR}/django/$1"
+
     # Dynamic PHP command execution using separate files from Bin PHP directory.
     elif [ -f "${DOCKR_BIN_DIR}/php/$1" ]; then
         is_docker_up
