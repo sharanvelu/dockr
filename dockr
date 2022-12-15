@@ -85,19 +85,19 @@ export DOCKR_COMPOSER_VERSION="${DOCKR_COMPOSER_VERSION:-2}"
 . "${DOCKR_HELPER_BIN_DIR}/status_helpers.sh"
 
 if [ $# -gt 0 ]; then
-    # Dynamic command execution using separate files.
-    if [ -f "${DOCKR_BIN_DIR}/$1" ]; then
-        . "${DOCKR_BIN_DIR}/$1"
-
     # Dynamic Flask based commands.
-    elif [ ${DOCKR_MODE:-php} == "flask" ] && [ -f "${DOCKR_BIN_DIR}/php/$1" ]; then
+    if [ ${DOCKR_MODE:-php} == "flask" ] && [ -f "${DOCKR_BIN_DIR}/flask/$1" ]; then
         is_docker_up
         . "${DOCKR_BIN_DIR}/flask/$1"
 
     # Dynamic Django based commands.
-    elif [ ${DOCKR_MODE:-php} == "django" ] && [ -f "${DOCKR_BIN_DIR}/php/$1" ]; then
+    elif [ ${DOCKR_MODE:-php} == "django" ] && [ -f "${DOCKR_BIN_DIR}/django/$1" ]; then
         is_docker_up
         . "${DOCKR_BIN_DIR}/django/$1"
+
+    # Dynamic command execution using separate files.
+    elif [ -f "${DOCKR_BIN_DIR}/$1" ]; then
+        . "${DOCKR_BIN_DIR}/$1"
 
     # Dynamic PHP command execution using separate files from Bin PHP directory.
     elif [ -f "${DOCKR_BIN_DIR}/php/$1" ]; then
