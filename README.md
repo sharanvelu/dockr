@@ -1,4 +1,4 @@
-<p align="center"><img style="height: 60px" src="https://docs.dockr.in/logo/half.png" alt="Logo Laravel Sail"></p>
+<p align="center"><img style="height: 60px" src="https://dockr.in/assets/half.png" alt="DockR Logo"></p>
 <p align="center">Local Development Environment for Laravel using Docker</p>
 
 ## Introduction
@@ -44,7 +44,7 @@ dockr down
 
 ### Official Documentation
 
-Full Documentation for `DockR` can be found on the [DockR Website](https://docs.dockr.in).
+Full Documentation for `DockR` can be found on the [DockR Website](https://dockr.in).
 
 ### License
 

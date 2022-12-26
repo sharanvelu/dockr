@@ -17,7 +17,7 @@ OUTPUT_TEXT=$(echo -e "${ASSET_CONT_LIST}newLine${PROJECT_CONT_LIST}" | column -
 
 # Split the newLine char into a new Line and print the result
 OUTPUT_TEXT="${OUTPUT_TEXT//newLine/\\n\\n}"
-OUTPUT_TEXT=${OUTPUT_TEXT//"--AC--"/"${RED}Asset Containers...${CYAN}"}
-OUTPUT_TEXT=${OUTPUT_TEXT//"--PC--"/"${RED}Project Containers...${CYAN}"}
+OUTPUT_TEXT=${OUTPUT_TEXT//"--AC--"/"${RED} --------- Asset Containers --------- ${CYAN}"}
+OUTPUT_TEXT=${OUTPUT_TEXT//"--PC--"/"${RED} -------- Project Containers -------- ${CYAN}"}
 
 echo -e "${OUTPUT_TEXT}"
