@@ -3,8 +3,9 @@ ARG DT_PYTHON_TAG
 # start by pulling the python image
 FROM python:$DT_PYTHON_TAG
 
-# install the dependencies and packages in the requirements file
-RUN apk add gcc musl-dev libffi-dev
+ENV POETRY_HOME=/opt/poetry
+ENV POETRY_VENV=/opt/poetry-venv
+ENV POETRY_CACHE_DIR=/opt/.cache
 
 # copy every content from the local file to the image
 COPY ./temp /app
@@ -13,10 +14,8 @@ COPY ./temp /app
 WORKDIR /app
 
 # install the dependencies and packages in the requirements.txt file
-RUN if [[ -f "/app/requirements.txt" ]]; then pip install -r requirements.txt ; fi
-# install the dependencies and packages in the poetry file
 ARG DT_POETRY_VERSION
-RUN if [[ -f "/app/pyproject.toml" ]]; then pip install "poetry==$DT_POETRY_VERSION" && poetry config virtualenvs.create false && poetry install --no-root --no-interaction --no-ansi ; fi
+RUN pip install "poetry==$DT_POETRY_VERSION" && poetry config virtualenvs.create false && poetry install --no-root --no-interaction --no-ansi
 
 # Delete the project files from image
 RUN rm -rf /app
