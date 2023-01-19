@@ -50,16 +50,6 @@ check_dockr_network() {
     fi
 }
 
-# Check for DockR Network
-check_dockr_composer_cache_volume() {
-    if ! docker volume ls | grep -q -w "${DOCKR_COMPOSER_CACHE_VOLUME}"; then
-        echo -e "Creating ${CYAN}${DOCKR_NAME} Composer Cache${CLR} Volume"
-        docker volume create "${DOCKR_COMPOSER_CACHE_VOLUME}" >>/dev/null
-        echo -e "${GREEN}${DOCKR_NAME} Composer Cache Volume Created.${CLR}"
-        echo -e ""
-    fi
-}
-
 # Manage Asset Containers (Mysql, Postgres, Redis, ...)
 check_asset_container() {
     if [ -n "${DOCKR_SKIP_ASSET}" ]; then
@@ -98,7 +88,7 @@ start_project_containers() {
     DT_SITE="http://${DOCKR_SITE}"
     export DT_SITE
 
-    docker-compose -f ${DOCKR_COMPOSE_FILE} -p ${PROJECT_NAME} up -d web ${WORKER_SERVICE}
+    docker-compose -f $1 -p ${PROJECT_NAME} up -d web ${WORKER_SERVICE}
 }
 
 # Get Container Port which is generated dynamically by the Docker
@@ -118,16 +108,6 @@ check_required_project_env
 
 check_dockr_network
 
-check_dockr_composer_cache_volume
-
 check_asset_container
 
-start_project_containers
-
-get_container_port
-
-check_proxy_for_project
-
 check_project_database_existence
-
-echo -e "\nYour Application should be running at ${RED}${UNDERLINE}${DT_SITE}${CLR}"
