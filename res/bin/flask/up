@@ -18,4 +18,6 @@ get_container_port
 
 check_proxy_for_project
 
+check_project_database_existence
+
 echo -e "\nYour Application should be running at ${RED}${UNDERLINE}${DT_SITE}${CLR}"

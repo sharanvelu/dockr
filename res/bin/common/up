@@ -40,16 +40,6 @@ check_required_project_env() {
     export DOCKR_SITE
 }
 
-# Check for DockR Network
-check_dockr_composer_cache_volume() {
-    if ! docker volume ls | grep -q -w "${DOCKR_COMPOSER_CACHE_VOLUME}"; then
-        echo -e "Creating ${CYAN}${DOCKR_NAME} Composer Cache${CLR} Volume"
-        docker volume create "${DOCKR_COMPOSER_CACHE_VOLUME}" >>/dev/null
-        echo -e "${GREEN}${DOCKR_NAME} Composer Cache Volume Created.${CLR}"
-        echo -e ""
-    fi
-}
-
 # Manage Asset Containers (Mysql, Postgres, Redis, ...)
 check_asset_container() {
     if [ -n "${DOCKR_SKIP_ASSET}" ]; then
@@ -71,7 +61,7 @@ check_asset_container() {
 check_project_database_existence() {
     if [ -n "${DOCKR_SKIP_ASSET}" ] || [ -n "${DOCKR_SKIP_DB_CHECK}" ]; then
         if [ -z "${DOCKR_SKIP_ASSET}" ] && [ -n "${DOCKR_SKIP_DB_CHECK}" ]; then
-            echo -e "${CYAN}DOCKR_SKIP_DB_CHECK${CLR} is provided, Skipping DB check.\n"
+            echo -e "\n${CYAN}DOCKR_SKIP_DB_CHECK${CLR} is provided, Skipping DB check."
         fi
     else
         create_project_database
@@ -108,16 +98,4 @@ check_required_project_env
 
 check_dockr_network
 
-check_dockr_composer_cache_volume
-
 check_asset_container
-
-start_project_containers
-
-get_container_port
-
-check_proxy_for_project
-
-check_project_database_existence
-
-echo -e "\nYour Application should be running at ${RED}${UNDERLINE}${DT_SITE}${CLR}"
