@@ -82,7 +82,7 @@ create_project_database() {
         echo -e "Checking for database ${CYAN}${DB_DATABASE}${CLR} presence in ${DB_CONNECTION}."
 
         # To prevent server error, give the containers a "3 sec interval" to boot up completely.
-        sleep 3
+        sleep 4
 
         # Create DB with specified name if it is not present.
         # If DB is "MYSQL"

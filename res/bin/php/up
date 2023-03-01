@@ -1,0 +1,25 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+. "${DOCKR_COMMON_BIN_DIR}/up"
+
+# Check for Composer cache volume
+check_dockr_composer_cache_volume() {
+    if ! docker volume ls | grep -q -w "${DOCKR_COMPOSER_CACHE_VOLUME}"; then
+        echo -e "Creating ${CYAN}${DOCKR_NAME} Composer Cache${CLR} Volume"
+        docker volume create "${DOCKR_COMPOSER_CACHE_VOLUME}" >>/dev/null
+        echo -e "${GREEN}${DOCKR_NAME} Composer Cache Volume Created.${CLR}"
+        echo -e ""
+    fi
+}
+
+check_dockr_composer_cache_volume
+
+start_project_containers "${DOCKR_COMPOSE_FILE}"
+
+get_container_port
+
+check_proxy_for_project
+
+echo -e "\nYour Application should be running at ${RED}${UNDERLINE}${DT_SITE}${CLR}"
