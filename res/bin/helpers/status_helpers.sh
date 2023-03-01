@@ -40,3 +40,13 @@ is_docker_up() {
         exit 1
     fi
 }
+
+# Check for DockR Network
+check_dockr_network() {
+    if ! docker network ls | grep -q -w "${DOCKR_NETWORK}"; then
+        echo -e "Creating ${CYAN}${DOCKR_NAME}${CLR} Network."
+        docker network create "${DOCKR_NETWORK}" >>/dev/null
+        echo -e "${GREEN}${DOCKR_NAME} Network Created.${CLR}"
+        echo -e ""
+    fi
+}

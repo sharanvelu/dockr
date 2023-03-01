@@ -1,0 +1,23 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+. "${DOCKR_COMMON_BIN_DIR}/up"
+
+. "${DOCKR_BIN_DIR}/flask/common"
+
+set_dockerfile_context
+
+get_requirement_files
+
+start_project_containers "${DOCKR_HOME_DIR}/res/flask/dockr-compose.yml"
+
+remove_requirement_files
+
+get_container_port
+
+check_proxy_for_project
+
+check_project_database_existence
+
+echo -e "\nYour Application should be running at ${RED}${UNDERLINE}${DT_SITE}${CLR}"

@@ -26,7 +26,7 @@ CYAN="\033[1;36m"
 PROCESS="${CYAN}=>${CLR} "
 
 # Git Tag and Branch
-DOCKR_TAG="v1.5.1"
+DOCKR_TAG="v2.0"
 
 ## DockR NAME, KEY
 DOCKR_KEY="dockr"
@@ -160,6 +160,17 @@ finalize_setup() {
     # Setup asset config File
     if [ ! -f "${DOCKR_FILE_CONFIG}" ]; then
         touch "${DOCKR_FILE_CONFIG}"
+
+        echo "redis=0" >> "${DOCKR_FILE_CONFIG}"
+        echo "postgres=0" >> "${DOCKR_FILE_CONFIG}"
+        echo "mysql=0" >> "${DOCKR_FILE_CONFIG}"
+
+        echo -e "\n"
+        echo -e "------------ NOTE ------------"
+        echo -e "${PROCESS}The asset Containers ${GREEN}MySQL, postgreSQL and Redis${CLR} are ${RED}disabled${CLR} by default."
+        echo -e "Kindly make sure to enable them using ${CYAN}dockr config${CLR} command or using ${CYAN}DOCKR_OVERRIDE_ASSET_CONFIG${CLR} env variable."
+        echo -e "--------- END OF NOTE --------"
+        echo -e "\n"
     fi
 }
 

@@ -4,6 +4,10 @@
 
 . "${DOCKR_COMMON_BIN_DIR}/asset"
 
+is_docker_up
+
+check_dockr_network
+
 # Start the Asset Containers
 if [ "$2" == "up" ]; then
     start_asset_containers

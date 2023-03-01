@@ -1,5 +1,5 @@
-<p align="center"><img style="height: 60px" src="https://docs.dockr.in/logo/half.png" alt="Logo Laravel Sail"></p>
-<p align="center">Local Development Environment for Laravel using Docker</p>
+<p align="center"><img style="height: 60px" src="https://dockr.in/assets/half.png" alt="DockR Logo"></p>
+<p align="center">Local Development Environment for Laravel using Docker. V2.0</p>
 
 ## Introduction
 
@@ -13,12 +13,6 @@ DockR is compatible with almost all platforms such as `macOS`, `Linux` and `Wind
 We aren't planning for native `Windows` support (without WSL) as of now. But may be in the future releases.
 
 ### Installation
-
-#### macOS
-
-```bash
-brew install sharanvelu/dockr/dockr
-```
 
 #### macOS, Linux or Windows(WSL)
 
@@ -44,7 +38,7 @@ dockr down
 
 ### Official Documentation
 
-Full Documentation for `DockR` can be found on the [DockR Website](https://docs.dockr.in).
+Full Documentation for `DockR` can be found on the [DockR Website](https://dockr.in).
 
 ### License
 

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+. "${DOCKR_BIN_DIR}/flask/common"
+
+set_dockerfile_context
+
+get_requirement_files
+
+# Exporting the DT_SITE var here because it is used in dockr-compose-file.yml
+DT_SITE="http://${DOCKR_SITE}"
+export DT_SITE
+
+docker-compose -f "${DOCKR_HOME_DIR}/res/flask/dockr-compose.yml" -p ${PROJECT_NAME} build
+
+remove_requirement_files

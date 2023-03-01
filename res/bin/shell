@@ -2,4 +2,7 @@
 
 ## DockR by Sharan
 
-. "${DOCKR_BIN_DIR}/bash"
+is_dockr_up
+
+docker-compose -f "${DOCKR_COMPOSE_FILE}" -p "${PROJECT_NAME}" exec web \
+    sh
