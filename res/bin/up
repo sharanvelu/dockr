@@ -41,16 +41,6 @@ check_required_project_env() {
 }
 
 # Check for DockR Network
-check_dockr_network() {
-    if ! docker network ls | grep -q -w "${DOCKR_NETWORK}"; then
-        echo -e "Creating ${CYAN}${DOCKR_NAME}${CLR} Network."
-        docker network create "${DOCKR_NETWORK}" >>/dev/null
-        echo -e "${GREEN}${DOCKR_NAME} Network Created.${CLR}"
-        echo -e ""
-    fi
-}
-
-# Check for DockR Network
 check_dockr_composer_cache_volume() {
     if ! docker volume ls | grep -q -w "${DOCKR_COMPOSER_CACHE_VOLUME}"; then
         echo -e "Creating ${CYAN}${DOCKR_NAME} Composer Cache${CLR} Volume"

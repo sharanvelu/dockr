@@ -2,6 +2,8 @@
 
 ## DockR by Sharan
 
+is_docker_up
+
 PS_FORMAT="table {{.ID}}|{{.Names}}|{{.Label \"SERVICE\"}}|{{.Label \"SITE\"}}|{{title .State}}|{{.Status}}${CLR}"
 
 # Asset Containers List
