@@ -78,12 +78,14 @@ start_project_containers() {
     DT_SITE="http://${DOCKR_SITE}"
     export DT_SITE
 
-    docker-compose -f ${DOCKR_COMPOSE_FILE} -p ${PROJECT_NAME} up -d web ${WORKER_SERVICE}
+    docker-compose -f $1 -p ${PROJECT_NAME} up -d web ${WORKER_SERVICE}
 }
 
 # Get Container Port which is generated dynamically by the Docker
 get_container_port() {
     DT_PORT=$(docker ps --filter "name=${DOCKR_CONTAINER_NAME}-web" --format "{{.Ports}}" -a)
+
+    DT_PORT=$(echo $DT_PORT | tr -s "\->" "\n" | tr -s ":" "\n" | tail -2 | head -1)
 
     DT_PORT=${DT_PORT#*:}
     DT_PORT=${DT_PORT%-*}
