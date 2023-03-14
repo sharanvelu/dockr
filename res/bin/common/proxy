@@ -7,30 +7,7 @@ check_proxy_for_project() {
     if [ -n "${DOCKR_SITE}" ] && [ "${DOCKR_SITE}" != "" ]; then
         is_dockr_asset_up proxy
 
-        check_site_in_hosts
         add_site_to_proxy_container
-    fi
-}
-
-# Check if the Site is set in /etc/hosts.
-check_site_in_hosts() {
-    # DockR will add the site in the /etc/hosts file in the future.
-    if ! echo ${DOCKR_SITE} | grep -q "*"; then
-        if ! grep -q -w ${DOCKR_SITE} /etc/hosts; then
-            echo -e "\nSpecified site ${CYAN}${DOCKR_SITE}${CLR} is not present in the ${CYAN}/etc/hosts${CLR} file."
-            echo -e "Adding site ${CYAN}${DOCKR_SITE}${CLR} in the /etc/hosts file."
-            {
-                echo ""
-                echo "# Added by ${DOCKR_NAME}"
-                echo "127.0.0.1     ${DOCKR_SITE}"
-            } | sudo tee -a /etc/hosts > /dev/null
-            echo -e "Site ${CYAN}${DOCKR_SITE}${CLR} added to the /etc/hosts file."
-
-            # exit 1
-        fi
-    else
-        echo -e "\nYou have been using wildcard (*) in ${CYAN}DOCKR_SITE${CLR}."
-        echo -e "Make sure you have added the appropriate site in ${CYAN}/etc/hosts${CLR} file"
     fi
 }
 
@@ -39,8 +16,8 @@ add_site_to_proxy_container() {
     echo -e "\n${PROCESS}Setting up proxy..."
 
     if [ "${DT_PORT}" != "" ]; then
-        DT_PROXY_SITE="http://host.docker.internal:${DT_PORT}"
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec proxy bash -c "add-listener ${DOCKR_SITE} ${DT_PROXY_SITE} >> /dev/null"
+        DT_PROXY_SITE="http://host.docker.internal"
+        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec proxy bash -c "add-listener ${DOCKR_SITE} ${DT_PROXY_SITE} ${DT_APP_PORT} ${DT_VITE_PORT} >> /dev/null"
 
         sleep 2
 
