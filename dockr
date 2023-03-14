@@ -13,7 +13,7 @@ fi
 # DockR Variables
 DOCKR_NAME="DockR"
 DOCKR_NETWORK="dockr"
-DOCKR_VERSION="v2.0"
+DOCKR_VERSION="v2.1"
 DOCKR_HOME_DIR="${HOME}/dockr"
 if command -v realpath >/dev/null 2>&1; then
     DOCKR_REALPATH=$(realpath $0)
