@@ -26,7 +26,7 @@ CYAN="\033[1;36m"
 PROCESS="${CYAN}=>${CLR} "
 
 # Git Tag and Branch
-DOCKR_TAG="v2.0"
+DOCKR_TAG="v2.1"
 
 ## DockR NAME, KEY
 DOCKR_KEY="dockr"

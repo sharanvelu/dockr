@@ -5,6 +5,7 @@ services:
         container_name: "${DOCKR_CONTAINER_NAME}-web"
         ports:
             - "0:80"
+            - "0:5173"
         volumes:
             - "${PROJECT_ROOT_DIR}/:/var/www/html"
             - dockr_composer_cache:/root/.composer/cache

@@ -64,11 +64,12 @@ services:
             - "SITE=-"
 
     proxy:
-        image: "sharanvelu/dockr-proxy:latest"
+        image: "sharanvelu/dockr-proxy:v2.1"
         container_name: dockr_proxy
         ports:
             - "80:80"
             - "443:443"
+            - "5173:5173"
         networks:
             - "${DOCKR_NETWORK:-dockr}"
         labels:
