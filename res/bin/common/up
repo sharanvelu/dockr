@@ -94,7 +94,6 @@ start_project_containers() {
 get_container_port() {
     DT_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web")
 
-    DT_PORT=$(docker port kvb-shares-survey-web)
     DT_PORT=${DT_PORT// 0.0.0.0:/}
     DT_PORT=${DT_PORT//\/tcp /}
 
