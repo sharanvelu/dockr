@@ -38,7 +38,7 @@ check_required_project_env() {
     fi
 
     # Modify the DOCKR_SITE to .localhost
-    if [[ ! $DOCKR_SITE == *".localhost" ]]; then
+    if [[ ! $DOCKR_SITE == *".localhost" ]] && [ ! "${DOCKR_IGNORE_HOST}" == "ignore" ]; then
         DOCKR_SITE="${DOCKR_SITE}.localhost"
 
         echo -e "Added ${CYAN}'.localhost'${CLR} at the end of the ${CYAN}DOCKR_SITE${CLR}."
@@ -92,16 +92,11 @@ start_project_containers() {
 
 # Get Container Port which is generated dynamically by the Docker
 get_container_port() {
-    DT_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web")
+    DT_APP_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 80/tcp)
+    DT_APP_PORT=${DT_APP_PORT//0.0.0.0:/}
 
-    DT_PORT=${DT_PORT// 0.0.0.0:/}
-    DT_PORT=${DT_PORT//\/tcp /}
-
-    DT_APP_PORT=$(echo $DT_PORT | tr -s " " "\n" | grep "80->")
-    DT_APP_PORT=${DT_APP_PORT//80->/}
-
-    DT_VITE_PORT=$(echo $DT_PORT | tr -s " " "\n" | grep "5173->")
-    DT_VITE_PORT=${DT_VITE_PORT//5173->/}
+    DT_VITE_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 5173/tcp)
+    DT_VITE_PORT=${DT_VITE_PORT//0.0.0.0:/}
 }
 
 set +e
