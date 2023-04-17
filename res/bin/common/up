@@ -38,7 +38,7 @@ check_required_project_env() {
     fi
 
     # Modify the DOCKR_SITE to .localhost
-    if [[ ! $DOCKR_SITE == *".localhost" ]]; then
+    if [[ ! $DOCKR_SITE == *".localhost" ]] && [ ! "${DOCKR_IGNORE_HOST}" == "ignore" ]; then
         DOCKR_SITE="${DOCKR_SITE}.localhost"
 
         echo -e "Added ${CYAN}'.localhost'${CLR} at the end of the ${CYAN}DOCKR_SITE${CLR}."
