@@ -1,0 +1,24 @@
+ARG DT_PYTHON_TAG
+
+# start by pulling the python image
+FROM python:$DT_PYTHON_TAG
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# copy every content from the local file to the image
+COPY ./temp /app
+
+# switch working directory
+WORKDIR /app
+
+# install the dependencies and packages in the requirements.txt file
+RUN pip install -r requirements.txt
+
+# Delete the project files from image
+RUN rm -rf /app
+
+# configure the container to run in an executed manner
+ENTRYPOINT ["python"]
+
+CMD ["manage.py", "runserver", "0.0.0.0:5000"]
