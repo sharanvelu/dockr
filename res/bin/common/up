@@ -92,11 +92,17 @@ start_project_containers() {
 
 # Get Container Port which is generated dynamically by the Docker
 get_container_port() {
-    DT_APP_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 80/tcp)
-    DT_APP_PORT=${DT_APP_PORT//0.0.0.0:/}
+    if [ ${DOCKR_MODE:-php} == "flask" ] || [ ${DOCKR_MODE:-php} == "django" ]; then
+      DT_APP_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 5000/tcp)
+      DT_APP_PORT=${DT_APP_PORT//0.0.0.0:/}
+    else
+      DT_APP_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 80/tcp)
+      DT_APP_PORT=${DT_APP_PORT//0.0.0.0:/}
 
-    DT_VITE_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 5173/tcp)
-    DT_VITE_PORT=${DT_VITE_PORT//0.0.0.0:/}
+      DT_VITE_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 5173/tcp)
+      DT_VITE_PORT=${DT_VITE_PORT//0.0.0.0:/}
+    fi
+
 }
 
 set +e

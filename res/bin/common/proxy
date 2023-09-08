@@ -17,7 +17,7 @@ add_site_to_proxy_container() {
 
     if [ "${DT_APP_PORT}" != "" ]; then
         DT_PROXY_SITE="http://host.docker.internal"
-        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec proxy bash -c "add-listener ${DOCKR_SITE} ${DT_PROXY_SITE} ${DT_APP_PORT} ${DT_VITE_PORT} >> /dev/null"
+        docker-compose -f "${DOCKR_COMPOSE_ASSET}" -p "${DOCKR_ASSET_PROJECT_NAME}" exec proxy bash -c "add-listener ${DOCKR_SITE} ${DT_PROXY_SITE} ${DT_APP_PORT} ${DT_VITE_PORT:- 1} >> /dev/null"
 
         sleep 2
 
