@@ -3,7 +3,7 @@
 ## DockR by Sharan
 
 function export_required_envs() {
-    DT_PYTHON_TAG="${DOCKR_PYTHON_VERSION}-alpine"
+    DT_PYTHON_TAG="${DOCKR_PYTHON_VERSION}"
     if [ -z "${DOCKR_PYTHON_VERSION}" ]; then
         DT_PYTHON_TAG=latest
     fi
@@ -25,7 +25,11 @@ function export_required_envs() {
 
 function set_dockerfile_context() {
     if [ -z "${DOCKR_DJANGO_DOCKER_FILE}" ]; then
-        DT_DJANGO_DOCKER_FILE="Dockerfile"
+        if [[ -f "${PROJECT_ROOT_DIR}/requirements.txt" ]]; then
+            DT_DJANGO_DOCKER_FILE="Dockerfile-requirements"
+        else
+            DT_DJANGO_DOCKER_FILE="Dockerfile-poetry"
+        fi
         DT_DJANGO_DOCKER_CONTEXT="${DOCKR_HOME_DIR}/res/django"
     else
         if [ -f "${PROJECT_ROOT_DIR}/${DOCKR_DJANGO_DOCKER_FILE}" ]; then
