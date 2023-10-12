@@ -92,10 +92,10 @@ start_project_containers() {
 
 # Get Container Port which is generated dynamically by the Docker
 get_container_port() {
-    DT_APP_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 80/tcp)
+    DT_APP_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 80/tcp | head -n 1)
     DT_APP_PORT=${DT_APP_PORT//0.0.0.0:/}
 
-    DT_VITE_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 5173/tcp)
+    DT_VITE_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 5173/tcp | head -n 1)
     DT_VITE_PORT=${DT_VITE_PORT//0.0.0.0:/}
 }
 
