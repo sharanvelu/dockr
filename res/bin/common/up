@@ -102,7 +102,6 @@ get_container_port() {
       DT_VITE_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 5173/tcp | head -n 1)
       DT_VITE_PORT=${DT_VITE_PORT//0.0.0.0:/}
     fi
-
 }
 
 set +e
