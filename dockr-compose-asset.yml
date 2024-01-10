@@ -27,7 +27,7 @@ services:
             - "SITE=-"
 
     postgres:
-        image: postgres
+        image: postgres:14
         container_name: dockr_postgres
         ports:
             - "5432:5432"

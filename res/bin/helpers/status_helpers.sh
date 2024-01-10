@@ -36,6 +36,8 @@ is_docker_up() {
     # Checks For the working of Docker Engine...
     if ! docker info >> /dev/null 2>&1; then
         echo -e "${BOLD}Docker is not running.${CLR}"
+        echo -e "\n${PROCESS}Starting Docker. It might take some time to start. Please try after few minutes.${CLR}"
+        open --background -a Docker
 
         exit 1
     fi
