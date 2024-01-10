@@ -19,6 +19,7 @@ RUN pip install -r requirements.txt
 RUN rm -rf /app
 
 # configure the container to run in an executed manner
-ENTRYPOINT ["python"]
-
-CMD ["manage.py", "runserver", "0.0.0.0:5000"]
+COPY entrypoint.sh /etc/entrypoint.sh
+RUN chmod u+x /etc/entrypoint.sh
+ENTRYPOINT ["/etc/entrypoint.sh"]
+CMD []
