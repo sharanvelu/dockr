@@ -1,0 +1,122 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+# Source the Common Asset script
+. "${DOCKR_COMMON_BIN_DIR}/asset"
+
+# Source the common Database script
+. "${DOCKR_COMMON_BIN_DIR}/database"
+
+# Source the proxy script.
+. "${DOCKR_COMMON_BIN_DIR}/proxy"
+
+# Source the Traefik script
+. "${DOCKR_BIN_DIR}/traefik"
+
+# Checks and Prints any info Provided from Server
+print_info_from_server() {
+    DT_RESPONSE="$(curl -s https://info.dockr.in/cli)"
+    if [ ! "${DT_RESPONSE}" == "" ]; then
+        echo -e "${GREEN}---------------------------------------${CLR}"
+        echo -e "Info From ${CYAN}DockR${CLR} :"
+        echo -e "${DT_RESPONSE}"
+        echo -e "${GREEN}---------------------------------------${CLR}"
+        echo ""
+    fi
+}
+
+# Check Mandatory Environment variables
+check_required_project_env() {
+    # Check if the project is still containing the "DOCKR_PORT" variable.
+    if [ -n "${DOCKR_PORT}" ]; then
+        echo -e "You are using a deprecated option ${CYAN}\"DOCKR_PORT\"${CLR} which is no more in use. Please use ${CYAN}\"DOCKR_SITE\"${CLR}\n"
+    fi
+
+    # Check for Mandatory DOCKR_SITE Env variables
+    if [ -z "${DOCKR_SITE}" ]; then
+        echo -e "Required Parameter ${CYAN}\"DOCKR_SITE\"${CLR} is ${RED}missing${CLR} from ${CYAN}.env${CLR}"
+
+        exit 1
+    fi
+
+    # Modify the DOCKR_SITE to .localhost
+    if [[ ! $DOCKR_SITE == *".localhost" ]] && [ ! "${DOCKR_IGNORE_HOST}" == "ignore" ]; then
+        DOCKR_SITE="${DOCKR_SITE}.localhost"
+
+        echo -e "Added ${CYAN}'.localhost'${CLR} at the end of the ${CYAN}DOCKR_SITE${CLR}."
+        echo -e "Otherwise, You will need to modify your hosts file to direct traffic to this site.\n"
+        echo -e "${PROCESS}${GREEN}${DOCKR_SITE}${CLR}\n"
+    fi
+
+    export DOCKR_SITE
+}
+
+# Manage Asset Containers (Mysql, Postgres, Redis, ...)
+check_asset_container() {
+    if [ -n "${DOCKR_SKIP_ASSET}" ]; then
+        echo -e "${CYAN}DOCKR_SKIP_ASSET${CLR} is provided, Skipping Asset containers and DB check.\n"
+        if [ -n "${DOCKR_OVERRIDE_ASSET_CONFIG}" ]; then
+            echo -e "${RED}Warning :${CLR} Both ${CYAN}DOCKR_SKIP_ASSET${CLR} and ${CYAN}DOCKR_OVERRIDE_ASSET_CONFIG${CLR} are given."
+            echo -e "${CYAN}DOCKR_OVERRIDE_ASSET_CONFIG${CLR} will not be taken into consideration.\n"
+        fi
+
+        echo -e "${PROCESS}Starting Proxy container..."
+        dt_start_asset proxy
+        echo -e "Proxy container ${GREEN}started${CLR} successfully.\n"
+    else
+        start_asset_containers
+    fi
+}
+
+# Check for database existence mentioned in "DB_DATABASE" env
+check_project_database_existence() {
+    if [ -n "${DOCKR_SKIP_ASSET}" ] || [ -n "${DOCKR_SKIP_DB_CHECK}" ]; then
+        if [ -z "${DOCKR_SKIP_ASSET}" ] && [ -n "${DOCKR_SKIP_DB_CHECK}" ]; then
+            echo -e "\n${CYAN}DOCKR_SKIP_DB_CHECK${CLR} is provided, Skipping DB check."
+        fi
+    else
+        create_project_database
+    fi
+}
+
+# Starts the Project containers
+start_project_containers() {
+    if [ -n "${DOCKR_WORKER}" ]; then
+        WORKER_SERVICE="worker"
+    fi
+
+    # Exporting the DT_SITE var here because it is used in dockr-compose-file.yml
+    DT_SITE="http://${DOCKR_SITE}"
+    export DT_SITE
+
+    ${DOCKER_COMPOSE_COMMAND} -f $1 -p ${PROJECT_NAME} up -d web ${WORKER_SERVICE}
+}
+
+# Get Container Port which is generated dynamically by the Docker
+get_container_port() {
+    if [ ${DOCKR_MODE:-php} == "flask" ] || [ ${DOCKR_MODE:-php} == "django" ]; then
+      DT_APP_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 5000/tcp | head -n 1)
+      DT_APP_PORT=${DT_APP_PORT//0.0.0.0:/}
+    else
+      DT_APP_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 80/tcp | head -n 1)
+      DT_APP_PORT=${DT_APP_PORT//0.0.0.0:/}
+
+      DT_VITE_PORT=$(docker port "${DOCKR_CONTAINER_NAME}-web" 5173/tcp | head -n 1)
+      DT_VITE_PORT=${DT_VITE_PORT//0.0.0.0:/}
+    fi
+}
+
+set +e
+
+print_info_from_server
+
+check_required_project_env
+
+check_dockr_network
+
+check_dockr_volumes
+
+check_asset_container
+
+expose_traefik_label_values

@@ -1,0 +1,46 @@
+services:
+    web:
+        image: "${DOCKR_DOCKER_IMAGE}"
+        container_name: "${DOCKR_CONTAINER_NAME}-web"
+        ports:
+            - "0:80"
+            - "0:5173"
+        volumes:
+            - "${PROJECT_ROOT_DIR}/:/var/www/html"
+            - "${HOME}/.composer:/root/.composer"
+        networks:
+            - "${DOCKR_NETWORK:-dockr}"
+        environment:
+            DOCKR_COMPOSER_VERSION: "${DOCKR_COMPOSER_VERSION}"
+        labels:
+            - "TYPE=project"
+            - "SERVICE=web"
+            - "SITE=${DT_SITE:--}"
+            - "traefik.http.routers.${DT_TRAEFIK_HOST_KEY:-}.rule=${DT_TRAEFIK_PROXY_RULE:-}"
+            - "traefik.http.routers.${DT_TRAEFIK_HOST_KEY:-}.entrypoints=web,websecure"
+            - "traefik.http.routers.${DT_TRAEFIK_HOST_KEY:-}.service=${DT_TRAEFIK_HOST_KEY:-}_service"
+            - "traefik.http.services.${DT_TRAEFIK_HOST_KEY:-}_service.loadbalancer.server.port=80"
+
+    worker:
+        image: "${DOCKR_DOCKER_IMAGE}"
+        container_name: "${DOCKR_CONTAINER_NAME}-worker"
+        volumes:
+            - "${PROJECT_ROOT_DIR}/:/var/www/html"
+        networks:
+            - "${DOCKR_NETWORK:-dockr}"
+        environment:
+            DOCKR_CONTAINER_TYPE: "worker"
+            DOCKR_COMPOSER_VERSION: "${DOCKR_COMPOSER_VERSION}"
+        labels:
+            - "TYPE=project"
+            - "SERVICE=worker"
+            - "SITE=-"
+
+networks:
+    dockr:
+        external: true
+
+volumes:
+    dockr_composer_cache:
+        name: dockr_composer_cache
+        external: true

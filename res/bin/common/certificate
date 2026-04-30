@@ -1,0 +1,28 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+DOCKR_CERTS_DIR="${DOCKR_DATA_DIR}/certs"
+
+function install_certificates_to_container() {
+    if [ -d "$DOCKR_CERTS_DIR" ] && [ "$(ls -A "$DOCKR_CERTS_DIR" 2>/dev/null)" ]; then
+        echo -e "\nFound Certificates in ${CYAN}'${DOCKR_CERTS_DIR}'${CLR} directory."
+        install_certificates
+    fi
+}
+
+function install_certificates() {
+    echo -e "${PROCESS}Installing Certificates to ${CYAN}web${CLR} container..."
+    for cert_file in "${DOCKR_CERTS_DIR}"/*.pem "${DOCKR_CERTS_DIR}"/*.crt; do
+        [ -f "$cert_file" ] || continue
+
+        filename=$(basename "$cert_file")
+        target_name="${filename%.pem}.crt"
+
+        docker cp "$cert_file" "${DOCKR_CONTAINER_NAME}-web":/usr/local/share/ca-certificates/"$target_name" >> /dev/null 2>&1
+    done
+
+    echo -e "${PROCESS}Updating ${CYAN}CA Certificates${CLR} within container..."
+    docker exec -it "${DOCKR_CONTAINER_NAME}-web" update-ca-certificates >> /dev/null 2>&1
+}
+

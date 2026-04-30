@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+display_dockr_name
+echo -e "A Local development environment for Laravel using Docker"
+echo -e "Current Version : ${DOCKR_VERSION:-<Unknown Version>}"

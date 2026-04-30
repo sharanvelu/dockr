@@ -1,0 +1,111 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+# Include common scripts for down and stop command
+. "${DOCKR_COMMON_BIN_DIR}/config"
+
+print_invalid_config_identifier_provided_message() {
+    echo -e "\n${RED}Error :${CLR} Invalid Custom Config Identifier (${RED}'${1}'${CLR}) provided."
+    echo -e "Kindly use any of the available Identifiers.\n"
+    echo -e "Currently available Custom Config Identifiers : ${CYAN}${2}${CLR}."
+
+    exit 1
+}
+
+print_invalid_config_value_provided_message() {
+    echo -e "\n${RED}Error :${CLR} Invalid Custom Value (${RED}${1}${CLR}) provided."
+    echo -e "Kindly use any of the following values.\n"
+    echo -e "Currently supported values : ${CYAN}${2}${CLR}."
+
+    exit 1
+}
+
+# Check if the provided identifier is available to use.
+# If not, display error message and terminate.
+check_if_config_identifier_exists() {
+    EXISTING_CONFIG_IDENTIFIERS="mysql,postgres,redis,minio,opensearch"
+    if ! echo ${EXISTING_CONFIG_IDENTIFIERS} | grep -q -w "$1"; then
+        print_invalid_config_identifier_provided_message "$1" "mysql, postgres, redis, minio, opensearch"
+    fi
+}
+
+DT_CONFIG_ACTION=$2
+DT_CONFIG_IDENTIFIER=$3
+DT_CONFIG_VALUE=$4
+
+if [ "${DT_CONFIG_ACTION}" == 'enable' ]; then
+    check_if_config_identifier_exists "${DT_CONFIG_IDENTIFIER}"
+
+    set_config "${DT_CONFIG_IDENTIFIER}" 1
+    echo -e "Configuration for ${CYAN}'"${DT_CONFIG_IDENTIFIER}"'${CLR} is now ${GREEN}'enabled'${CLR}."
+
+elif [ "${DT_CONFIG_ACTION}" == 'disable' ]; then
+    check_if_config_identifier_exists "${DT_CONFIG_IDENTIFIER}"
+
+    set_config "${DT_CONFIG_IDENTIFIER}" 0
+    echo -e "Configuration for ${CYAN}'"${DT_CONFIG_IDENTIFIER}"'${CLR} is now ${RED}'disabled'${CLR}."
+
+elif [ "${DT_CONFIG_ACTION}" == 'get' ]; then
+    check_if_config_identifier_exists "${DT_CONFIG_IDENTIFIER}"
+
+    is_config_set "${DT_CONFIG_IDENTIFIER}"
+    if [ $? == 1 ]; then
+
+        RESULT=`get_config "${DT_CONFIG_IDENTIFIER}"`
+        if [ ${RESULT} == 1 ]; then
+            echo -e "Configuration for ${CYAN}'"${DT_CONFIG_IDENTIFIER}"'${CLR} is set to ${GREEN}'enabled'${CLR}."
+        else
+            echo -e "Configuration for ${CYAN}'"${DT_CONFIG_IDENTIFIER}"'${CLR} is set to ${RED}'disabled'${CLR}."
+        fi
+
+    else
+        echo -e "Configuration for ${CYAN}'"${DT_CONFIG_IDENTIFIER}"'${CLR} isn't set."
+        echo -e "This will be treated as ${GREEN}enabled${CLR} by default."
+    fi
+
+# Set Config Value for custom types
+elif [ "${DT_CONFIG_ACTION}" == 'set' ]; then
+    if [[ "${DT_CONFIG_IDENTIFIER}" == "context" ]]; then
+        SUPPORTED_CONFIG_VALUES="docker,colima"
+        if echo ${SUPPORTED_CONFIG_VALUES} | grep -q -w "${DT_CONFIG_VALUE}"; then
+            set_config "${DT_CONFIG_IDENTIFIER}" ${DT_CONFIG_VALUE}
+        else
+            print_invalid_config_value_provided_message "${DT_CONFIG_VALUE}" "docker, colima"
+        fi
+    else
+        print_invalid_config_identifier_provided_message ${DT_CONFIG_IDENTIFIER} "context"
+    fi
+
+# Display configuration for all the containers.
+elif [ "${DT_CONFIG_ACTION}" == 'list' ]; then
+    echo -e "\n${BOLD}Asset configurations${CLR}:"
+
+    for DT_ASSET in mysql postgres redis minio opensearch
+    do
+        RESULT=`get_config "${DT_ASSET}"`
+        if [ ${RESULT} == 1 ]; then
+            echo -e "${CYAN}"${DT_ASSET}"${CLR}   \t => \t ${GREEN}enabled${CLR}"
+        else
+            echo -e "${CYAN}"${DT_ASSET}"${CLR}   \t => \t ${RED}disabled${CLR}"
+        fi
+    done
+
+    echo -e "\n${BOLD}Custom configurations${CLR}:"
+
+    for DT_OTHER_CONFIG in context
+    do
+        RESULT=`get_config "${DT_OTHER_CONFIG}"`
+        echo -e "${CYAN}"${DT_OTHER_CONFIG}"${CLR}   \t => \t ${RESULT}"
+    done
+
+# Display help command
+elif [ "${DT_CONFIG_ACTION}" == 'help' ]; then
+    display_help "config"
+
+else
+    shift 1
+
+    echo -e "Invalid option provided : ${CYAN}'$@'${CLR}"
+    display_help "config"
+fi

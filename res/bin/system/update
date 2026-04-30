@@ -1,0 +1,15 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+echo -e "${PROCESS}Removing the running containers..."
+
+dockr down all -f
+
+echo -e "\n${PROCESS}Initiating the update process..."
+
+if [ -n "$2" ]; then
+    DOCKR_USE_BRANCH=$2 ${DOCKR_HOME_DIR}/install.sh
+else
+    ${DOCKR_HOME_DIR}/install.sh
+fi

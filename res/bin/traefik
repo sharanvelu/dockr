@@ -1,0 +1,22 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+expose_traefik_label_values() {
+    DT_TRAEFIK_HOST_KEY=${DOCKR_SITE}
+    DT_TRAEFIK_HOST_KEY=${DT_TRAEFIK_HOST_KEY//.localhost/}
+    DT_TRAEFIK_HOST_KEY=${DT_TRAEFIK_HOST_KEY//\*./}
+    DT_TRAEFIK_HOST_KEY=${DT_TRAEFIK_HOST_KEY//-/_}
+    DT_TRAEFIK_HOST_KEY=${DT_TRAEFIK_HOST_KEY//./_}
+
+    DT_TRAEFIK_PROXY_RULE="Host(\`${DOCKR_SITE}\`)"
+    if [[ ${DOCKR_SITE} =~ "*" ]]; then
+        DT_TRAEFIK_REGEX_HOST=${DOCKR_SITE//\./\\\.}
+        DT_TRAEFIK_REGEX_HOST=${DT_TRAEFIK_REGEX_HOST//\*/^.+}
+
+        DT_TRAEFIK_PROXY_RULE="HostRegexp(\`${DT_TRAEFIK_REGEX_HOST}\$\`)"
+    fi
+
+    export DT_TRAEFIK_HOST_KEY
+    export DT_TRAEFIK_PROXY_RULE
+}

@@ -1,0 +1,65 @@
+#!/bin/bash
+
+## DockR by Sharan
+
+function export_required_envs() {
+    DT_PYTHON_TAG="${DOCKR_PYTHON_VERSION}"
+    if [ -z "${DOCKR_PYTHON_VERSION}" ]; then
+        DT_PYTHON_TAG=latest
+    fi
+    DOCKR_POETRY_VERSION=${DOCKR_POETRY_VERSION:-1.2.0}
+
+    export DT_PYTHON_TAG
+    export DOCKR_POETRY_VERSION
+
+    # Set Flask App file
+    if [ -z "${FLASK_APP}" ]; then
+        if [ -f "${PROJECT_ROOT_DIR}/app.py" ]; then
+            FLASK_APP="app.py"
+        elif [ -f "${PROJECT_ROOT_DIR}/main.py" ]; then
+            FLASK_APP="main.py"
+        fi
+    fi
+    export FLASK_APP
+}
+
+function set_dockerfile_context() {
+    if [ -z "${DOCKR_FLASK_DOCKER_FILE}" ]; then
+        if [[ -f "${PROJECT_ROOT_DIR}/requirements.txt" ]]; then
+          DT_FLASK_DOCKER_FILE="Dockerfile-requirements"
+        else
+          DT_FLASK_DOCKER_FILE="Dockerfile-poetry"
+        fi
+        DT_FLASK_DOCKER_CONTEXT="${DOCKR_HOME_DIR}/res/flask"
+    else
+        if [ -f "${PROJECT_ROOT_DIR}/${DOCKR_FLASK_DOCKER_FILE}" ]; then
+            DT_FLASK_DOCKER_FILE="${DOCKR_FLASK_DOCKER_FILE}"
+            DT_FLASK_DOCKER_CONTEXT="${PROJECT_ROOT_DIR}"
+        else
+            echo -e "Specified Dockerfile is not present in the project dir"
+            exit 1
+        fi
+    fi
+
+    export DT_FLASK_DOCKER_CONTEXT
+    export DT_FLASK_DOCKER_FILE
+}
+
+function get_requirement_files() {
+    mkdir "${DOCKR_HOME_DIR}/res/flask/temp"
+    if [[ -f "${PROJECT_ROOT_DIR}/requirements.txt" ]]; then
+        cp "${PROJECT_ROOT_DIR}/requirements.txt" "${DOCKR_HOME_DIR}/res/flask/temp/requirements.txt"
+    fi
+    if [[ -f "${PROJECT_ROOT_DIR}/poetry.lock" ]]; then
+        cp "${PROJECT_ROOT_DIR}/poetry.lock" "${DOCKR_HOME_DIR}/res/flask/temp/poetry.lock"
+    fi
+    if [[ -f "${PROJECT_ROOT_DIR}/pyproject.toml" ]]; then
+        cp "${PROJECT_ROOT_DIR}/pyproject.toml" "${DOCKR_HOME_DIR}/res/flask/temp/pyproject.toml"
+    fi
+}
+
+function remove_requirement_files() {
+    rm -rf "${DOCKR_HOME_DIR}/res/flask/temp"
+}
+
+export_required_envs

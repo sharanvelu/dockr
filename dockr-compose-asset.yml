@@ -1,0 +1,183 @@
+services:
+    mysql:
+        image: ubuntu/mysql
+        container_name: dockr_mysql
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: "${DOCKR_ASSET_PASSWORD:-password}"
+            MYSQL_USER: "${DOCKR_ASSET_USERNAME:-dockr}"
+            MYSQL_PASSWORD: "${DOCKR_ASSET_PASSWORD:-password}"
+            MYSQL_DATABASE: "${DOCKR_ASSET_DEFAULT_DATABASE:-dockr}"
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        volumes:
+            - dockr_mysql:/var/lib/mysql
+        command: ["--default-authentication-plugin=mysql_native_password"]
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-ppassword"]
+            retries: 3
+            timeout: 5s
+        networks:
+            - "${DOCKR_NETWORK:-dockr}"
+        labels:
+            - "TYPE=asset"
+            - "SERVICE=mysql"
+            - "SITE=-"
+            - "traefik.enable=false"
+
+    postgres:
+        image: postgres:14
+        container_name: dockr_postgres
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: "${DOCKR_ASSET_USERNAME:-dockr}"
+            POSTGRES_PASSWORD: "${DOCKR_ASSET_PASSWORD:-password}"
+            POSTGRES_DB: "${DOCKR_ASSET_DEFAULT_DATABASE:-dockr}"
+        volumes:
+            - dockr_postgres:/var/lib/postgresql/data
+        restart: always
+        networks:
+            - "${DOCKR_NETWORK:-dockr}"
+        labels:
+            - "TYPE=asset"
+            - "SERVICE=postgres"
+            - "SITE=-"
+            - "traefik.enable=false"
+
+    redis:
+        image: "redis:alpine"
+        container_name: dockr_redis
+        ports:
+            - "6379:6379"
+        volumes:
+            - dockr_redis:/data
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            retries: 3
+            timeout: 5s
+        networks:
+            - "${DOCKR_NETWORK:-dockr}"
+        labels:
+            - "TYPE=asset"
+            - "SERVICE=redis"
+            - "SITE=-"
+            - "traefik.enable=false"
+
+    minio:
+        image: "quay.io/minio/minio"
+        container_name: dockr_minio
+        ports:
+            - "9000:9000"
+            - "9090:9090"
+        volumes:
+            - ~/Documents/minio/data:/data
+        environment:
+            MINIO_ROOT_USER: "${DOCKR_ASSET_USERNAME:-dockr}"
+            MINIO_ROOT_PASSWORD: "${DOCKR_ASSET_PASSWORD:-password}"
+        command: ["server", "/data", "--console-address", ":9090"]
+        networks:
+            - "${DOCKR_NETWORK:-dockr}"
+        labels:
+            - "TYPE=asset"
+            - "SERVICE=minio"
+            - "SITE=http://minio.localhost"
+            - "traefik.http.routers.minio.rule=Host(`minio.localhost`)"
+            - "traefik.http.routers.minio.entrypoints=web"
+            - "traefik.http.routers.minio.service=minio_service"
+            - "traefik.http.services.minio_service.loadbalancer.server.port=9090"
+
+    opensearch:
+        image: opensearchproject/opensearch:1.3.9
+        container_name: dockr_opensearch
+        environment:
+            cluster.name: "dockr_opensearch_cluster"
+            node.name: "dockr_opensearch"
+            discovery.seed_hosts: "dockr_opensearch"
+            DISABLE_SECURITY_PLUGIN: "true"
+            discovery.type: "single-node"
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+            nofile:
+                soft: 65536
+                hard: 65536
+        volumes:
+            - dockr_opensearch:/usr/share/opensearch/data
+        ports:
+            - "9200:9200"
+            - "9600:9600"
+        networks:
+            - "${DOCKR_NETWORK:-dockr}"
+        labels:
+            - "TYPE=asset"
+            - "SERVICE=opensearch"
+            - "SITE=-"
+            - "traefik.enable=false"
+    opensearch_dashboard:
+        image: opensearchproject/opensearch-dashboards:1
+        container_name: dockr_opensearch_dashboard
+        ports:
+            - "5601:5601"
+        environment:
+            OPENSEARCH_HOSTS: '["http://dockr_opensearch:9200"]'
+            OPENSEARCH_USERNAME: "${DOCKR_ASSET_USERNAME:-dockr}"
+            OPENSEARCH_PASSWORD: "${DOCKR_ASSET_PASSWORD:-password}"
+        networks:
+            - "${DOCKR_NETWORK:-dockr}"
+        labels:
+            - "TYPE=asset"
+            - "SERVICE=opensearch"
+            - "SITE=http://opensearch.localhost"
+            - "traefik.http.routers.opensearch.rule=Host(`opensearch.localhost`)"
+            - "traefik.http.routers.opensearch.entrypoints=web,websecure"
+            - "traefik.http.routers.opensearch.service=opensearch_service"
+            - "traefik.http.services.opensearch_service.loadbalancer.server.port=5601"
+
+    proxy:
+        image: traefik:v3.6
+        container_name: dockr_proxy
+        ports:
+            - "80:80"
+            - "443:443"
+            - "5173:5173"
+            - "8080:8080"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        command:
+            - "--entrypoints.web.address=:80"
+            - "--entrypoints.websecure.address=:443"
+            - "--entrypoints.websecure.http.tls=true"
+            - "--providers.docker=true"
+            - "--api.dashboard=true"
+            - "--api.insecure=true"
+            - "--log.level=INFO"
+        networks:
+            - "${DOCKR_NETWORK:-dockr}"
+        labels:
+            - "TYPE=asset"
+            - "SERVICE=proxy"
+            - "SITE=http://dockr"
+            - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
+            - "traefik.http.routers.traefik.entrypoints=web"
+            - "traefik.http.routers.traefik.service=traefik_service"
+            - "traefik.http.services.traefik_service.loadbalancer.server.port=8080"
+
+networks:
+    dockr:
+        external: true
+
+volumes:
+    dockr_mysql:
+        name: dockr_asset_mysql
+        external: true
+    dockr_postgres:
+        name: dockr_asset_postgres
+        external: true
+    dockr_redis:
+        name: dockr_asset_redis
+        external: true
+    dockr_opensearch:
+        name: dockr_asset_opensearch
+        external: true
